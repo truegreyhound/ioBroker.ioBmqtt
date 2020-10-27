@@ -1,0 +1,98 @@
+{
+  "_from": "iobroker.mqtt@2.1.4",
+  "_id": "iobroker.mqtt@2.1.4",
+  "_inBundle": false,
+  "_integrity": "sha512-QGSatrAk5TUlwvaDl9+8oPVNAc0cq/Si5r+v0R89cKm53gLhcy2uU83OcFyK7OwdJi85wF5TWBNQphXaTnAxsQ==",
+  "_location": "/iobroker.mqtt",
+  "_phantomChildren": {
+    "@types/node": "11.11.0",
+    "async-limiter": "1.0.0",
+    "bl": "1.2.2",
+    "buffer": "5.6.1",
+    "buffer-from": "1.1.1",
+    "commist": "1.0.0",
+    "core-util-is": "1.0.2",
+    "duplexify": "3.5.1",
+    "end-of-stream": "1.4.1",
+    "es6-map": "0.1.5",
+    "help-me": "1.1.0",
+    "inherits": "2.0.3",
+    "once": "1.4.0",
+    "reinterval": "1.1.0",
+    "split2": "2.1.1",
+    "through2": "2.0.3",
+    "typedarray": "0.0.6",
+    "util-deprecate": "1.0.2",
+    "xtend": "4.0.1"
+  },
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "iobroker.mqtt@2.1.4",
+    "name": "iobroker.mqtt",
+    "escapedName": "iobroker.mqtt",
+    "rawSpec": "2.1.4",
+    "saveSpec": null,
+    "fetchSpec": "2.1.4"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/iobroker.mqtt/-/iobroker.mqtt-2.1.4.tgz",
+  "_shasum": "2dae5f06d1ee393eefa9fc0cb60a3aa512974115",
+  "_spec": "iobroker.mqtt@2.1.4",
+  "_where": "/home/iobroker",
+  "author": {
+    "name": "bluefox",
+    "email": "dogafox@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@iobroker/adapter-core": "^2.4.0",
+    "mqtt": "^2.18.8",
+    "mqtt-connection": "^4.0.0",
+    "websocket-stream": "^5.5.2",
+    "ws": "^5.2.2"
+  },
+  "deprecated": false,
+  "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
+  "devDependencies": {
+    "@alcalzone/release-script": "^1.4.1",
+    "chai": "^4.2.0",
+    "eslint": "^7.3.0",
+    "gulp": "^4.0.2",
+    "mocha": "^8.0.1"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
+  "keywords": [
+    "iobroker",
+    "notification",
+    "MQTT",
+    "message"
+  ],
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/LICENSE"
+    }
+  ],
+  "main": "main.js",
+  "name": "iobroker.mqtt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ioBroker/ioBroker.mqtt.git"
+  },
+  "scripts": {
+    "release": "release-script",
+    "test": "node node_modules/mocha/bin/mocha --exit"
+  },
+  "version": "2.1.4"
+}
