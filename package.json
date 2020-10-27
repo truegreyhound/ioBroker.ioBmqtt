@@ -1,14 +1,14 @@
 {
-  "_from": "iobroker.mqtt@2.1.4",
-  "_id": "iobroker.mqtt@2.1.4",
+  "_from": "iobroker.mqtt@2.1.9",
+  "_id": "iobroker.mqtt@2.1.9",
   "_inBundle": false,
-  "_integrity": "sha512-QGSatrAk5TUlwvaDl9+8oPVNAc0cq/Si5r+v0R89cKm53gLhcy2uU83OcFyK7OwdJi85wF5TWBNQphXaTnAxsQ==",
+  "_integrity": "sha512-yqgb0cUGppCMWtj0RPw/RHYrvZRIWH6/YfTAeWWZckctljiIxJcFJkO/Qmy2ccFyV3AHJeBPKi3LVAUz881qag==",
   "_location": "/iobroker.mqtt",
   "_phantomChildren": {
     "@types/node": "11.11.0",
     "async-limiter": "1.0.0",
     "bl": "1.2.2",
-    "buffer": "5.6.1",
+    "buffer": "5.6.0",
     "buffer-from": "1.1.1",
     "commist": "1.0.0",
     "core-util-is": "1.0.2",
@@ -28,21 +28,21 @@
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "iobroker.mqtt@2.1.4",
+    "raw": "iobroker.mqtt@2.1.9",
     "name": "iobroker.mqtt",
     "escapedName": "iobroker.mqtt",
-    "rawSpec": "2.1.4",
+    "rawSpec": "2.1.9",
     "saveSpec": null,
-    "fetchSpec": "2.1.4"
+    "fetchSpec": "2.1.9"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/iobroker.mqtt/-/iobroker.mqtt-2.1.4.tgz",
-  "_shasum": "2dae5f06d1ee393eefa9fc0cb60a3aa512974115",
-  "_spec": "iobroker.mqtt@2.1.4",
-  "_where": "/home/iobroker",
+  "_resolved": "https://registry.npmjs.org/iobroker.mqtt/-/iobroker.mqtt-2.1.9.tgz",
+  "_shasum": "8f7c275276470de408f5933d63ede2c7f9b252fc",
+  "_spec": "iobroker.mqtt@2.1.9",
+  "_where": "/opt/iobroker/node_modules/iobroker.js-controller",
   "author": {
     "name": "bluefox",
     "email": "dogafox@gmail.com"
@@ -52,7 +52,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "@iobroker/adapter-core": "^2.4.0",
+    "@iobroker/adapter-core": "^2.3.1",
     "mqtt": "^2.18.8",
     "mqtt-connection": "^4.0.0",
     "websocket-stream": "^5.5.2",
@@ -61,11 +61,11 @@
   "deprecated": false,
   "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
   "devDependencies": {
-    "@alcalzone/release-script": "^1.4.1",
+    "@alcalzone/release-script": "^1.8.1",
     "chai": "^4.2.0",
-    "eslint": "^7.3.0",
+    "eslint": "^7.9.0",
     "gulp": "^4.0.2",
-    "mocha": "^8.0.1"
+    "mocha": "^8.1.3"
   },
   "engines": {
     "node": ">=6.0.0"
@@ -94,5 +94,5 @@
     "release": "release-script",
     "test": "node node_modules/mocha/bin/mocha --exit"
   },
-  "version": "2.1.4"
+  "version": "2.1.9"
 }

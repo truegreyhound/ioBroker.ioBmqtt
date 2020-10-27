@@ -1,8 +1,68 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "2.1.4",
+    "version": "2.1.9",
     "news": {
+      "2.1.9": {
+        "en": "Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "fr": "Cas de crash évités (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+        "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-E，IOBROKER-MQTT-F）"
+      },
+      "2.1.8": {
+        "en": "Crash case prevented on unsubscribe (Sentry IOBROKER-MQTT-D)",
+        "de": "Absturz beim Abbestellen verhindert (Sentry IOBROKER-MQTT-D)",
+        "ru": "При отказе от подписки предотвращен сбой (Sentry IOBROKER-MQTT-D)",
+        "pt": "Caso de falha impedido ao cancelar (Sentry IOBROKER-MQTT-D)",
+        "nl": "Crashcasus verhinderd bij uitschrijving (Sentry IOBROKER-MQTT-D)",
+        "fr": "Cas de crash empêché lors de la désinscription (Sentry IOBROKER-MQTT-D)",
+        "it": "Crash case impedito all'annullamento dell'iscrizione (Sentry IOBROKER-MQTT-D)",
+        "es": "Caso de choque evitado al cancelar la suscripción (Sentry IOBROKER-MQTT-D)",
+        "pl": "Awaria zapobiegająca anulowaniu subskrypcji (Sentry IOBROKER-MQTT-D)",
+        "zh-cn": "取消预订时避免发生崩溃情况（Sentry IOBROKER-MQTT-D）"
+      },
+      "2.1.7": {
+        "en": "handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)",
+        "de": "Behandeln Sie ungültige mqtt-Servereinstellungen besser (Sentry IOBROKER-MQTT-9).",
+        "ru": "лучше обрабатывать неверные настройки сервера mqtt (Sentry IOBROKER-MQTT-9)",
+        "pt": "lidar melhor com configurações inválidas do servidor mqtt (Sentry IOBROKER-MQTT-9)",
+        "nl": "omgaan met ongeldige mqtt-serverinstellingen beter (Sentry IOBROKER-MQTT-9)",
+        "fr": "gérer mieux les paramètres de serveur mqtt invalides (Sentry IOBROKER-MQTT-9)",
+        "it": "gestire meglio le impostazioni del server mqtt non valide (Sentry IOBROKER-MQTT-9)",
+        "es": "manejar mejor la configuración inválida del servidor mqtt (Sentry IOBROKER-MQTT-9)",
+        "pl": "lepiej radzić sobie z nieprawidłowymi ustawieniami serwera mqtt (Sentry IOBROKER-MQTT-9)",
+        "zh-cn": "更好地处理无效的mqtt服务器设置（Sentry IOBROKER-MQTT-9）"
+      },
+      "2.1.6": {
+        "en": "Try to prevent creation of objects with invalid IDs\ncheck that state is set before accessing it (Sentry IOBROKER-MQTT-2)\nBetter handle disconnection cases (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "de": "Versuchen Sie, die Erstellung von Objekten mit ungültigen IDs zu verhindern\nÜberprüfen Sie, ob der Status festgelegt ist, bevor Sie darauf zugreifen (Sentry IOBROKER-MQTT-2).\nTrennungsfälle besser behandeln (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "ru": "Попробуйте предотвратить создание объектов с недействительными идентификаторами\nпроверьте, что состояние установлено перед доступом к нему (Sentry IOBROKER-MQTT-2)\nЛучшие случаи отключения ручки (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "pt": "Tente impedir a criação de objetos com IDs inválidos\nverifique se o estado está definido antes de acessá-lo (Sentry IOBROKER-MQTT-2)\nMelhor lidar com casos de desconexão (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "nl": "Probeer te voorkomen dat objecten met ongeldige ID's worden gemaakt\ncontroleer of de status is ingesteld voordat u deze opent (Sentry IOBROKER-MQTT-2)\nOntkoppelingsgevallen beter afhandelen (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "fr": "Essayez d'empêcher la création d'objets avec des ID invalides\nvérifier que l'état est défini avant d'y accéder (Sentry IOBROKER-MQTT-2)\nMieux gérer les cas de déconnexion (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "it": "Cerca di impedire la creazione di oggetti con ID non validi\nverificare che lo stato sia impostato prima di accedervi (Sentry IOBROKER-MQTT-2)\nGestire meglio i casi di disconnessione (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "es": "Intenta evitar la creación de objetos con ID no válidos\ncompruebe que el estado esté establecido antes de acceder a él (Sentry IOBROKER-MQTT-2)\nManejar mejor los casos de desconexión (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "pl": "Spróbuj zapobiec tworzeniu obiektów z nieprawidłowymi identyfikatorami\nsprawdź, czy stan jest ustawiony przed uzyskaniem do niego dostępu (Sentry IOBROKER-MQTT-2)\nLepsze przypadki rozłączania uchwytów (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+        "zh-cn": "尝试防止创建具有无效ID的对象\n在访问之前检查状态是否已设置（Sentry IOBROKER-MQTT-2）\n更好地处理断开情况（哨兵IOBROKER-MQTT-3，IOBROKER-MQTT-6）"
+      },
+      "2.1.5": {
+        "en": "try to prevent crashes on not existing state values\nSentry added for crash reporting with js-controller 3.x+",
+        "de": "Versuchen Sie, Abstürze bei nicht vorhandenen Statuswerten zu verhindern\nSentry für Crash-Reporting mit js-controller 3.x + hinzugefügt",
+        "ru": "попытаться предотвратить сбои на несуществующих значениях состояния\nДобавлен Sentry для отчетов о сбоях с помощью js-controller 3.x +",
+        "pt": "tente evitar falhas em valores de estado inexistentes\nAdicionado sentinela para relatórios de falhas com o js-controller 3.x +",
+        "nl": "probeer crashes op niet bestaande statuswaarden te voorkomen\nSentry toegevoegd voor crashrapportage met js-controller 3.x +",
+        "fr": "essayez d'éviter les plantages sur des valeurs d'état non existantes\nSentry ajouté pour les rapports de plantage avec js-controller 3.x +",
+        "it": "provare a prevenire arresti anomali su valori di stato non esistenti\nSentry aggiunto per la segnalazione di crash con js-controller 3.x +",
+        "es": "intenta evitar bloqueos en valores de estado no existentes\nSentry agregado para informes de fallas con js-controller 3.x +",
+        "pl": "spróbuj zapobiec awariom na nieistniejących wartościach stanu\nDodano Sentry do raportowania awarii z js-controller 3.x +",
+        "zh-cn": "尝试防止不存在的状态值崩溃\nSentry已添加，用于使用js-controller 3.x +进行崩溃报告"
+      },
       "2.1.4": {
         "en": "websocket do not have setTimeout method\nprevent messageID overflow",
         "de": "Websocket hat keine setTimeout-Methode\nÜberlaufen von messageID verhindern",
@@ -150,7 +210,15 @@
       "minWidth": 400,
       "minHeight": 400
     },
-    "installedFrom": "iobroker.mqtt@2.1.4"
+    "plugins": {
+      "sentry": {
+        "dsn": "https://40b55da1fb50459eab397fe8291e75fe@sentry.iobroker.net/91"
+      }
+    },
+    "dependencies": {
+      "js-controller": ">=1.5.8"
+    },
+    "installedFrom": "iobroker.mqtt@2.1.9"
   },
   "native": {
     "type": "client",

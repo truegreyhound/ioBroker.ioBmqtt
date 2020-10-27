@@ -138,16 +138,25 @@ function processMessage(obj) {
 
 let cnt = 0;
 function readStatesForPattern(pattern) {
+    adapter.log.debug('readStatesForPattern "' + pattern + '" ...');
+
     adapter.getForeignStates(pattern, (err, res) => {
+        adapter.log.debug('readStatesForPattern "' + pattern + '", res: ' + JSON.stringify(res));
+
         if (!err && res) {
             states = states || {};
 
             Object.keys(res).filter(id => !messageboxRegex.test(id))
                 .forEach(id => states[id] = res[id]);
         }
+
         // If all patters answered, start client or server
         if (!--cnt) {
+            adapter.log.debug('readStatesForPattern, states: ' + JSON.stringify(states));
+
             if (adapter.config.type === 'client') {
+                adapter.log.debug(' >> starting client');
+
                 client = new require('./lib/client')(adapter, states);
             } else {
                 server = new require('./lib/server')(adapter, states);
@@ -171,10 +180,10 @@ function main() {
             cnt++;
             readStatesForPattern(parts[t]);
         }
-    } else {
+/*    } else {
         // subscribe for all variables
         adapter.subscribeForeignStates('*');
-        readStatesForPattern('*');
+        readStatesForPattern('*'); */
     }
 
     adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;
