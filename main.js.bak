@@ -94,7 +94,7 @@ function startAdapter(options) {
             adapter.log.debug('main.adapter.on.stateChange, oldVal "' + oldVal + '", oldAck: ' + oldAck + ', state.val "' + state.val + '", state.ack: ' + state.ack);
 
             // If value really changed
-            if (!adapter.config.publish_onchange || oldVal !== state.val || oldAck !== state.ack) {
+            if (!adapter.config.publishOnChange || oldVal !== state.val || oldAck !== state.ack) {
                 // immer senden || Wert geändert || ack geändert
                 // immer senden - da muss es ja vorher eine Änderung am State gegeben haben, 
 
@@ -196,8 +196,8 @@ function readStatesForPattern(pattern) {
 function main() {
     adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
 
-    adapter.log.debug('adapter.config.publish_onchange: ' + adapter.config.publish_onchange)
-    adapter.log.debug('adapter.config.save_onchange: ' + adapter.config.save_onchange)
+    adapter.log.debug('adapter.config.publishOnChange: ' + adapter.config.publishOnChange)
+    adapter.log.debug('adapter.config.saveOnChange: ' + adapter.config.saveOnChange)
     adapter.log.debug('adapter.config.sendAckToo: ' + adapter.config.sendAckToo)
     
     // Subscribe on own variables to publish it

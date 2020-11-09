@@ -366,8 +366,8 @@
                         <span class="translate" for="publishOnChange">publish only on change:</span>
                     </div>
                     <div class="input-field col s12 m6 l3">
-                        <input id="save_onchange" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="save_onchange">Store only on change:</span>
+                        <input id="saveOnChange" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="saveOnChange">Store only on change:</span>
                     </div>
                     <div class="input-field col s12 m6 l3">
                         <input id="publishAllOnStart" type="checkbox" class="value filled-in" />
@@ -410,6 +410,24 @@
                     <div class="input-field col s12 m6 l3">
                         <input id="sendInterval" type="text" class="value" size="17" />
                         <label for="sendInterval"><span class="translate">Send interval:</span> (<span class="translate">ms</span>)</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12 m6 l3">
+                        <input id="ioBrokerMessageFormatActive" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="ioBrokerMessageFormatActive">Use ioBroker mqtt message format</span>
+                    </div>
+                    <div class="input-field col s12 m6 l3">
+                        <input id="ioBrokerMessageFormatIgnoreOwnMsg" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="ioBrokerMessageFormatIgnoreOwnMsg">ignore own messages</span>
+                    </div>
+                    <div class="input-field col s12 m6 l3">
+                        <input id="ioBrokerMessageFormatIgnoreOther" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="ioBrokerMessageFormatIgnoreOther">ignore non ioBroker messages</span>
+                    </div>
+                    <div class="input-field col s12 m6 l3">
+                        <input id="CheckNamespaceDeepInObjecttreeTo" type="text" class="value filled-in" />
+                        <span class="translate" for="CheckNamespaceDeepInObjecttreeTo">how deep check namspace before save under mqtt adapter (>=2)</span>
                     </div>
                 </div>
                 <div class="row">

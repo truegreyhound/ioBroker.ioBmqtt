@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "2.1.9",
+    "version": "2.2.1",
     "news": {
       "2.1.9": {
         "en": "Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
@@ -230,8 +230,8 @@
     "pass": "",
     "url": "localhost",
     "patterns": "#",
-    "publish_onchange": true,
-    "save_onchange": true,
+    "publishOnChange": true,
+    "saveOnChange": true,
     "publishAllOnStart": true,
     "debug": false,
     "publish": "*",
@@ -256,7 +256,11 @@
     "retain": false,
     "retransmitInterval": 2000,
     "retransmitCount": 10,
-    "storeClientsTime": 1440
+    "storeClientsTime": 1440,
+    "ioBrokerMessageFormatActive": true,
+    "ioBrokerMessageFormatIgnoreOwnMsg": true,
+    "CheckNamespaceDeepInObjecttreeTo": 3,
+    "ioBrokerMessageFormatIgnoreOther": false
   },
   "objects": [],
   "instanceObjects": [

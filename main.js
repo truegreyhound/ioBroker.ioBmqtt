@@ -13,7 +13,6 @@ const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const adapterName = require('./package.json').name.split('.').pop();
 let adapter;
 
-let server = null;
 let client = null;
 let states = {};
 
@@ -40,21 +39,15 @@ function startAdapter(options) {
     adapter.on('ready', () => {
         adapter.config.pass = decrypt('Zgfr56gFe87jJOM', adapter.config.pass);
         adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
-        if (adapter.config.ssl && adapter.config.type === 'server') {
-            // Load certificates
-            adapter.getCertificates((err, certificates) => {
-                adapter.config.certificates = certificates;
-                main();
-            });
-        } else {
-            // Start
-            main();
-        }
+
+        // Start
+        main();
     });
 
     adapter.on('unload', () => {
+        adapter.log.debug('main.on BeforeUnloadEvent, destroy ...');
+
         client && client.destroy();
-        server && server.destroy();
     });
 
     // is called if a subscribed local state changes
@@ -67,8 +60,6 @@ function startAdapter(options) {
 
             delete states[id];
 
-            // If SERVER
-            if (server) server.onStateChange(id);
             // if CLIENT
             if (client) client.onStateChange(id);
         } else
@@ -94,12 +85,10 @@ function startAdapter(options) {
             adapter.log.debug('main.adapter.on.stateChange, oldVal "' + oldVal + '", oldAck: ' + oldAck + ', state.val "' + state.val + '", state.ack: ' + state.ack);
 
             // If value really changed
-            if (!adapter.config.publish_onchange || oldVal !== state.val || oldAck !== state.ack) {
+            if (!adapter.config.publishOnChange || oldVal !== state.val || oldAck !== state.ack) {
                 // immer senden || Wert geändert || ack geändert
                 // immer senden - da muss es ja vorher eine Änderung am State gegeben haben, 
 
-                // If SERVER
-                server && server.onStateChange(id, state);
                 // if CLIENT
                 client && client.onStateChange(id, state);
             } else {
@@ -114,28 +103,23 @@ function startAdapter(options) {
 
 function processMessage(obj) {
     if (!obj || !obj.command) return;
+
     switch (obj.command) {
         case 'sendMessage2Client':
-            if (server) {
-                adapter.log.debug('Sending message from server to clients via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
-                server.onMessage(obj.message.topic, obj.message.message);
-            } else if (client) {
-                adapter.log.debug('Sending message from client to server via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
+            if (client) {
+                adapter.log.debug('Sending message from client to broker via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
                 client.onMessage(obj.message.topic, obj.message.message);
             } else {
-                adapter.log.debug('Neither MQTT server nor client not started, thus not sending message via topic ' + obj.message.topic + ' (' + obj.message.message + ').');
+                adapter.log.debug('MQTT client not started, thus not sending message via topic ' + obj.message.topic + ' (' + obj.message.message + ').');
             }
             break;
 
         case 'sendState2Client':
-            if (server) {
-                adapter.log.debug('Sending message from server to clients ' + obj.message.id + ': ' + obj.message.state + ' ...');
-                server.onStateChange(obj.message.id, obj.message.state);
-            } else if (client) {
-                adapter.log.debug('Sending message from client to server ' + obj.message.id + ': ' + obj.message.state + ' ...');
+            if (client) {
+                adapter.log.debug('Sending message from client to broker ' + obj.message.id + ': ' + obj.message.state + ' ...');
                 client.onStateChange(obj.message.id, obj.message.state);
             } else {
-                adapter.log.debug('Neither MQTT server nor client not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
+                adapter.log.debug('MQTT client not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
             }
             break;
 
@@ -189,19 +173,13 @@ function readStatesForPattern(pattern) {
                 .forEach(id => states[id] = res[id]);
         }
 
-        // If all patters answered, start client or server
+        // If all patters answered, start client
         if (!--cnt) {
             adapter.log.debug('main.readStatesForPattern, states: ' + JSON.stringify(states));
 
-            if (adapter.config.type === 'client') {
-                adapter.log.debug('main.readStatesForPattern >> starting client ...');
+            adapter.log.debug('main.readStatesForPattern >> starting client ...');
 
-                client = new require('./lib/client')(adapter, states);
-            } else {
-                adapter.log.debug('main.readStatesForPattern >> starting server ...');
-
-                server = new require('./lib/server')(adapter, states);
-            }
+            client = new require('./lib/client')(adapter, states);
         }
     });
 }
@@ -209,9 +187,13 @@ function readStatesForPattern(pattern) {
 function main() {
     adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
 
-    adapter.log.debug('adapter.config.publish_onchange: ' + adapter.config.publish_onchange)
-    adapter.log.debug('adapter.config.save_onchange: ' + adapter.config.save_onchange)
-    adapter.log.debug('adapter.config.sendAckToo: ' + adapter.config.sendAckToo)
+    adapter.log.debug('adapter.config.publishOnChange: ' + adapter.config.publishOnChange);
+    adapter.log.debug('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);
+    adapter.log.debug('adapter.config.sendAckToo: ' + adapter.config.sendAckToo);
+    adapter.log.debug('adapter.config.publish: ' + JSON.stringify(adapter.config.publish));
+    adapter.log.debug('adapter.config.ioBrokerMessageFormatActive: ' + adapter.config.ioBrokerMessageFormatActive);
+    adapter.log.debug('adapter.config.ioBrokerMessageFormatIgnoreOwnMsg: ' + adapter.config.ioBrokerMessageFormatIgnoreOwnMsg);
+    adapter.log.debug('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo);
     
     // Subscribe on own variables to publish it
     if (adapter.config.publish && adapter.config.publish != '') {
@@ -239,19 +221,12 @@ function main() {
         adapter.config.retransmitInterval = adapter.config.sendInterval * 5;
     }
 
-    // If no subscription, start client or server
+    // If no subscription, start client
     if (!cnt) {
-        if (adapter.config.type === 'client') {
-            adapter.log.debug('main >> starting client ...');
+        adapter.log.debug('main >> starting client ...');
 
-            client = new require('./lib/client')(adapter, states);
-            //client = new require(__dirname + '/lib/client')(adapter, states);
-        } else {
-            adapter.log.debug('main >> starting server ...');
-
-            server = new require('./lib/server')(adapter, states);
-            //server = new require(__dirname + '/lib/server')(adapter, states);
-        }
+        //client = new require('./lib/client')(adapter, states);
+        client = new require(__dirname + '/lib/client')(adapter, states);
     }
 }
 
