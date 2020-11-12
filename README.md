@@ -1,71 +1,93 @@
-![Logo](admin/mqtt.png)
-# ioBroker MQTT
+![Logo](admin/iobmqtt.png)
+# ioBroker MQTT message format client
 
-![Number of Installations](http://iobroker.live/badges/mqtt-installed.svg) ![Number of Installations](http://iobroker.live/badges/mqtt-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
-[![Tests](https://travis-ci.org/ioBroker/ioBroker.mqtt.svg?branch=master)](https://travis-ci.org/ioBroker/ioBroker.mqtt)
+##![Number of Installations](http://iobroker.live/badges/iobmqtt-installed.svg) ![Number of Installations](http://iobroker.live/badges/##iobmqtt-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.iobmqtt.svg)](https://www.npmjs.com/package/iobroker.iobmqtt)
+##[![Downloads](https://img.shields.io/npm/dm/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.iobmqtt)
+##[![Tests](https://travis-ci.org/ioBroker/ioBroker.mqtt.svg?branch=master)](https://travis-ci.org/ioBroker/ioBroker.iobmqtt)
 
-[![NPM](https://nodei.co/npm/iobroker.mqtt.png?downloads=true)](https://nodei.co/npm/iobroker.mqtt/)
+##[![NPM](https://nodei.co/npm/iobroker.iobmqtt.png?downloads=true)](https://nodei.co/npm/iobroker.iobmqtt/)
 
-Requires node.js **6.0** or higher.
+Requires node.js **8.0** or higher.
 
-## MQ Telemetry Transport for ioBroker (MQTT).
+## MQ Telemetry Transport for ioBroker (MQTT) message format.
 
 MQTT (formerly Message Queue Telemetry Transport) is a publish-subscribe based "light weight" messaging protocol for use on top of the TCP/IP protocol.
 It is designed for connections with remote locations where a "small code footprint" is required and/or network bandwidth is limited.
 The Publish-Subscribe messaging pattern requires a message broker. The broker is responsible for distributing messages to interested clients based on the topic of a message.
 Historically, the 'MQ' in 'MQTT' came from IBM's MQ message queuing product line.
 
+Dieser Adapter packt den zu sendenen State bzw. Wert in ein eigenes Metadatenobjekt, um zusätzliche Daten zu senden (ClientId, Sendezeit, Empfänger, u. a.). Damit kann u. a. das erneute Verarbeiten eines gerade empfangenen und selbst gesendeten States unterbunden werden. Zusätzlich kann für einzelne States eine base64-Kodierung konfiguriert. Außerdem besteht die Möglichkeit eine Grenze festzulegen, ab der die gesendete Nachricht komprimiert wird.
+
 This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 
-**This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
+##**This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and ##for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/##plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
 
-## Configuration
-- **Type** - Select "Client" (If you want to receive and send messages to other broker) or "Server" if you want create own MQTT broker.
+This adapter works only as client for an broker.
 
-### Server settings
-- **WebSockets** - if parallel to TCP Server, the WebSocket MQTT Server should run.
-- **Port** - Port where the server will run (Default 1883). **WebSockets** will always run on port+1 (Default 1884)
-- **SSL** - If TCP and WebSockets should run as secure server.
-- **Authentication/User name** - If authentication required, you can specify username. It is suggested to always use SSL with authentication to not send passwords over unsequre connection.  
-- **Authentication/Password** - Password for user.
-- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "*.memRss, mqtt.0.*" to get all memory states of all adapters and all states of adapter mqtt.0
-- **Publish only on change** - New messages will be sent to client only if the state value changes. Every message sent by client will be accepted, even if the value does not changed.
-- **Publish own states on connect** - by every client connection the all known states will be sent to client (defined by state mask), to say him which states has the ioBroker.
-- **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g if prefix "iobroker/" all states will have names like "**iobroker**/mqtt/0/connected"
-- **Trace output for every message** - Debug outputs.
-- **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
-- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true). The client will receive sent messages back in this mode.
-- **Interval before send topics by connection** - Pause between connection and when all topics will be sent to client (if activated).
-- **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
-- **Use chunk patch** - There is a problem with last update of mqtt-packet, that frames will be sent directly to client and not first completely built and then sent to client. Some old clients do not like such a packets and do not work with new library. To fix it you can activate this flag.
-- **Force clean session** - Overwrite the client settings and clear or keep session.
 
-### Client settings
+
+### connection settings
 - **URL** - name or ip address of the broker/server. Like "localhost".
 - **Port** - Port of the MQTT broker. By default 1883
 - **Secure** - If secure (SSL) connection must be used.
 - **User** - if broker required authentication, define here the user name.
 - **Password** - if user name is not empty the password must be set. It can be empty.
 - **Password confirmation** - repeat here the password.
-- **Subscribe Patterns** - Subscribe pattern. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. 'mqtt/0/#,javascript/#' to subscribe for states of mqtt.0 and javascript
-- **Publish only on change** - Store incoming messages only if payload is differ from actual stored.
-- **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of "yr" and "hm-rpc" adapter.  
-- **Publish all states at start** - Publish all states (defined by state mask) every time by connection establishment to announce own available states and their values.
-- **Prefix for topics** - The prefix can be defined for own states. Like "/var/ioBroker/". Name of topics will be for example published with the name "/var/ioBroker/ping/192-168-1-5".
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
-- **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
+
+### MQTT generell settings
+- **clientId** - uniq client id for identification on the broker  !!! bad english
+- **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g if prefix "iobroker/" all states will have names like "**iobroker**/iobmqtt/0/
+- **keepalive** - This value is a time interval, measured in seconds, during which the broker expects a client to send a message, such as a PUBLISH message. If no message is sent from the client to the broker during the interval, the broker automatically closes the connection. Note that the keep-alive value you specify is multiplied by 1.5, so setting a 10-minute keep-alive actually results in a 15 minute interval.
+
+- **Persistent Session** - When checked, the broker and the Client (QoS 1/2???) saves the session information of the client. This means it tracks which messages have been send / received by the client (only QoS Level 1 and 2) and to which topics this client has subscribed. This information survives a disconnect and reconnect of the adapter. (not tested)
+
 - **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true).
+--> überarbeiten, mache ich anders! und im code verifizieren
+
 - **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: ```{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}```); if not the values ```states.val``` is sent as a single value (example state.val as single value: ```true```)
-- **Persistent Session** - When checked the broker saves the session information of the adapter. This means it tracks which messages have been send / received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
+- **Trace output for every message** - Debug outputs.
+- **use ioBroker MQTT message format** - When checked, the published mesage (value or state object) is wraped up in an JSON object which I named "ioBroker MQTT message format", see the description below.
+- **ignore own messages** - States that have been sent (published as message) and subscribed as a topic at the same time are not processed
+- **ignore non ioBroker messages** - only messages in "ioBroker MQTT message format" format are processed
+- **compress from lenghth** - if the length of the original message is longer, it is compressed
+
+### MQTT subscribe settings
+- **Max topic length** - topics that are longer than this value are not processed
+- **QoS (Quality of Service)** - possible values 0, 1 or 2, see the documentation to MQTT, not tested yet
+- **Subscribe Patterns** - List of patterns to be subscribed. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. 'iobmqtt/0/#,javascript/#' to subscribe for states of iobmqtt.0 and javascript. A QoS that differs from the default can be set for each pattern. Only enabled patterns are subscribed.
+- **how deep check namspace before save under iobmqtt adapter** - For a received topic, it is checked whether there is already a data point for the derived ID up to this depth of the namespace. If so, the state is written under this namespace, if not under the namespace of this adapter instance, e.g if the receivd topic "javascript/0/watering/garden/circuit/1/valve_state" und the value of this property is "3" (zero based index) then the the adapter checks whether an object with the ID "javascript/0/watering/garden" exists. If so, the state is written there, otherwise under iobmqtt.<instance>. as e.g iobmqtt.0.javascript.0.watering.garden.circuit.1.valve_state
+- **Store only on change** - Write the incoming messages data only if the payload is differ from actual stored. If the payload is an ioBroker State object, then ack and ts are also taken into account.
+
+### MQTT publish settings
+- **Publish all states at start** - Publish all states (defined by state mask) every time by connection establishment to announce own available states and their values. If this option and "use ioBroker MQTT message format" is activated, the topic 'ioBroker/mqtt-command' with the payload 'publishStop' is sent before the states are sent. After the publication of all states, the topic 'ioBroker/mqtt-command' with the payload 'publishStart'.
+- **QoS (Quality of Service)** - possible values 0, 1 or 2, see the documentation to MQTT, not tested yet
+- **retain flag** - The broker stores the last retained message and the corresponding QoS for that topic. Each client that subscribes to a topic pattern that matches the topic of the retained message receives the retained message immediately after they subscribe. The broker stores only one retained message per topic. Retained messages help newly-subscribed clients get a status update immediately after they subscribe to a topic. The retained message eliminates the wait for the publishing clients to send the next update.
+- **Mask to publish own states** - List of mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of "yr" and "hm-rpc" adapter. Regardless of this, a state or a value are only sent if the value, ack or ts have changed. A QoS and the retain flag that differs from the default can be set for each mask. Only enabled masks are published.
+
+- **Send states (ack=true) too** - !!!???? == TRUE wird wohl auch nur states senden, wo ack == TRUE,   Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
+
+## ioBroker MQTT message format
+
+<topic> {'clientID': <ID>, 'ts': <timestamp>, 'version': <version>, 'receiver': <receiver>[, 'coding': <coding>[, 'coding-src': <coding-src>],'messsage': <Message>}
+topic: <normaler topic>|'ioBroker/mqtt-command'
+version: <m.n> - m == major, n == minor - version of the ioBroker MQTT message format
+	If a client receives a message with a larger major, this leads to an error message and after 3 messages to deactivation
+  Warnings for a larger minor (max 3 per day)
+receiver: * - everyone, \[<clientID1>[,<clientID2>]\]
+coding: |base64|zip		- In the object of a data point, a specification can be made in native.mqtt_coding. This can be particularly useful with JSON objects
+coding-src: |object|size, == '' | object - native.mqtt_coding, size - message.lenght > definition
+If topic == 'ioBroker/mqtt-command', then there is a control instruction in <message>: {'command': <command>}
+command: publishStop|publishStart - These messages are sent when "Publish all states at start" is active. The other clients suppress the publication of topics during this time if there is a subscription for this topic.
+
 
 ## Install
 
-```node iobroker.js add mqtt```
+```node iobroker.js add iobmqtt```
 
 ## Usage
 
-### How to test mqtt client:
+### How to test iobmqtt client:
 - Set type to "Client".
 - Leave port on 1883.
 - Set URL as "broker.mqttdashboard.com"
@@ -85,7 +107,7 @@ You may send / publish messages on topics using ```sendTo``` method from your ad
  * @param {string}  payload.message   Message to be published on specified topic
  *
  */
-adapter.sendTo('mqtt.0', 'sendMessage2Client', {topic: '/your/topic/here', message: 'your message'});
+adapter.sendTo('iobmqtt.0', 'sendMessage2Client', {topic: '/your/topic/here', message: 'your message'});
 ```
 
 ### Examples of using wildcards
@@ -114,11 +136,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 "Sport/+/Finals"
 
 ### Tests
-The broker was tested with following clients:
+The broker was tested with following broker:
 
-- http://mitsuruog.github.io/what-mqtt/
-- http://mqttfx.jfx4ee.org/
-- http://www.eclipse.org/paho/clients/tool/
+- mosquitto
 
 ## Todo
 * Implement resend of "QoS 2" messages after a while.
@@ -130,232 +150,20 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### 2.xxx (2020-11-01)
+* (greyhound) first published version with the  ioBroker MQTT message format
+
+### 2.1.10 (2020-11-01)
+* (greyhound) clone the mqtt-adapter to iobmqtt and rewrite the client
+
 ### 2.1.9 (2020-09-17)
 * (Apollon77) Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)
-
-### 2.1.8 (2020-08-24)
-* (Apollon77) Crash case prevented on unsubscribe (Sentry IOBROKER-MQTT-D)
-
-### 2.1.7 (2020-08-02)
-* (Apollon77) handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)
-
-### 2.1.6 (2020-08-02)
-* (Apollon77) Try to prevent creation of objects with invalid IDs
-* (Apollon77) check that state is set before accessing it (Sentry IOBROKER-MQTT-2)
-* (Apollon77) Better handle disconnection cases (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)
-
-### 2.1.5 (2020-07-26)
-* (Apollon77) try to prevent crashes on not existing state values
-* (Apollon77) Sentry added for crash reporting with js-controller 3.x+
-
-### 2.1.4 (2020-06-20)
-* (Apollon77) websocket do not have setTimeout method
-* (NorbGH) prevent messageID overflow
-
-### 2.1.3 (2020- 05-17)
-* (bluefox) Caught some errors
-
-### 2.1.2 (2020-03-02)
-* (foxriver76) removed usage of getMessage
-* (mbecker) send states as object in client mode
-
-### 2.1.1 (2019-07-27)
-* (bluefox) Add option to overwrite the client "clean session" settings
-
-### 2.1.0 (2019-05-02)
-* (Zefau) Add option to send message using messagebox
-* (Zefau) Fix error with logging on pubrec
-
-### 2.0.6 (2019-01-16)
-* (SchumyHao) Add Chinese support
-
-### 2.0.5 (2019-01-12)
-* (simatec) Support for Compact mode
-
-### 2.0.4 (2018-12-01)
-* (Apollon77) Subscribe to topics after connect
-
-### 2.0.3 (2018-08-11)
-* (bluefox) Prefix in server was corrected
-
-### 2.0.2 (2018-08-09)
-* (bluefox) Behaviour of "set" topics was changed
-
-### 2.0.1 (2018-07-06)
-* (bluefox) Double prefix by client was fixed
-
-### 2.0.0 (2018-03-05)
-* (bluefox) broke node.js 4 support
-* (bluefox) remove mqtt-stream-server
-* (bluefox) partial mqtt5 support
-
-### 1.5.0 (2018-03-05)
-* (bluefox) The patch for wifi-iot removed
-* (bluefox) the mqtt library updated
-* (bluefox) implement QoS>0
-
-### 1.4.2 (2018-01-30)
-* (bluefox) Admin3 settings are corrected
-
-### 1.4.1 (2018-01-13)
-* (bluefox) Convert error is caught
-* (bluefox) Ready for admin3
-
-### 1.3.3 (2017-10-15)
-* (bluefox) Fix sending of QOS=2 if server
-
-### 1.3.2 (2017-02-08)
-* (bluefox) Fix convert of UTF8 payloads
-* (bluefox) optional fix for chunking problem
-
-### 1.3.1 (2017-02-02)
-* (bluefox) Update mqtt packages
-* (bluefox) add Interval before send topics by connection ans send interval settings
-* (bluefox) reorganise configuration dialog
-
-### 1.3.0 (2017-01-07)
-* (bluefox) Update mqtt packages
-* (bluefox) configurable client ID
-
-### 1.2.5 (2016-11-24)
-* (bluefox) Fix server publishing
-
-### 1.2.4 (2016-11-13)
-* (bluefox) additional debug output
-
-### 1.2.1 (2016-11-06)
-* (bluefox) fix publish on start
-
-### 1.2.0 (2016-09-27)
-* (bluefox) implementation of LWT for server
-* (bluefox) update mqtt package version
-
-### 1.1.2 (2016-09-13)
-* (bluefox) fix authentication in server
-
-### 1.1.1 (2016-09-12)
-* (bluefox) do not parse JSON states, that do not have attribute "val" to support other systems
-
-### 1.1.0 (2016-07-23)
-* (bluefox) add new setting: Use different topic names for set and get
-
-### 1.0.4 (2016-07-19)
-* (bluefox) convert values like "+58,890" into numbers too
-
-### 1.0.3 (2016-05-14)
-* (cdjm) change client protocolID
-
-### 1.0.2 (2016-04-26)
-* (bluefox) update mqtt module
-
-### 1.0.1 (2016-04-25)
-* (bluefox) Fix translations in admin
-
-### 1.0.0 (2016-04-22)
-* (bluefox) Fix error with direct publish in server
-
-### 0.5.0 (2016-03-15)
-* (bluefox) fix web sockets
-* (bluefox) fix SSL
-
-### 0.4.2 (2016-02-10)
-* (bluefox) create object "info.connection"
-* (bluefox) add reconnection tests
-
-### 0.4.1 (2016-02-04)
-* (bluefox) fix error with states creation
-
-### 0.4.0 (2016-01-27)
-* (bluefox) add tests
-* (bluefox) client and server run
-
-### 0.3.1 (2016-01-14)
-* (bluefox) change creation of states by client
-
-### 0.3.0 (2016-01-13)
-* (bluefox) try to fix event emitter
-
-### 0.2.15 (2015-11-23)
-* (Pmant) fix publish on subscribe
-
-### 0.2.14 (2015-11-21)
-* (bluefox) fix error with wrong variable names 
-
-### 0.2.13 (2015-11-20)
-* (Pmant) fix error with wrong variable name 
-
-### 0.2.12 (2015-11-14)
-* (Pmant) send last known value on subscription (server)
-
-### 0.2.11 (2015-10-17)
-* (bluefox) set maximal length of topic name
-* (bluefox) convert "true" and "false" to boolean values
-
-### 0.2.10 (2015-09-16)
-* (bluefox) protect against empty topics
-
-### 0.2.8 (2015-05-17)
-* (bluefox) do not ty to parse JSON objects
-
-### 0.2.7 (2015-05-16)
-* (bluefox) fix test button
-
-### 0.2.6 (2015-05-16)
-* (bluefox) fix names if from mqtt adapter
-
-### 0.2.5 (2015-05-15)
-* (bluefox) subscribe to all states if no mask defined
-
-### 0.2.4 (2015-05-14)
-* (bluefox) add state "clients" to server with the list of clients
-
-### 0.2.3 (2015-05-14)
-* (bluefox) fix some errors
-
-### 0.2.2 (2015-05-13)
-* (bluefox) fix some errors with sendOnStart and fix flag sendAckToo
-
-### 0.2.0 (2015-05-13)
-* (bluefox) translations and rename config sendNoAck=>sendAckToo
-* (bluefox) lets create server not only on localhost
-
-### 0.1.8 (2015-05-13)
-* (bluefox) fix topic names in server mode
-* (bluefox) implement subscribe
-* (bluefox) update mqtt package
-
-### 0.1.7 (2015-03-24)
-* (bluefox) create objects if new state received
-* (bluefox) update mqtt library
-
-### 0.1.6 (2015-03-04)
-* (bluefox) just update index.html
-
-### 0.1.5 (2015-01-02)
-* (bluefox) fix error if state deleted
-
-### 0.1.4 (2015-01-02)
-* (bluefox) support of npm install
-
-### 0.1.2 (2014-11-28)
-* (bluefox) support of npm install
-
-### 0.1.1 (2014-11-22)
-* (bluefox) support of new naming concept
-
-### 0.1.0 (2014-10-23)
-* (bluefox) Update readme
-* (bluefox) Support of authentication for server and client
-* (bluefox) Support of prefix for own topics
-
-### 0.0.2 (2014-10-19)
-* (bluefox) support of server (actual no authentication)
 
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2020, bluefox <dogafox@gmail.com>
+Copyright (c) 2014-2020, greyhound <truegreyhound@gmx.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

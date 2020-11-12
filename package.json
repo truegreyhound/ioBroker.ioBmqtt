@@ -1,9 +1,9 @@
 {
-  "_from": "iobroker.mqtt@2.2.1x",
-  "_id": "iobroker.mqtt@2.2.1x",
+  "_from": "iobroker.iobmqtt@2.2.1x",
+  "_id": "iobroker.iobmqtt@2.2.1x",
   "_inBundle": false,
-  "_integrity": "sha512-yqgb0cUGppCMWtj0RPw/RHYrvZRIWH6/YfTAeWWZckctljiIxJcFJkO/Qmy2ccFyV3AHJeBPKi3LVAUz881qag==",
-  "_location": "/iobroker.mqtt",
+  "_integrity": "",
+  "_location": "/iobroker.iobmqtt",
   "_phantomChildren": {
     "@types/node": "11.11.0",
     "async-limiter": "1.0.0",
@@ -28,9 +28,9 @@
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "iobroker.mqtt@2.1.9",
-    "name": "iobroker.mqtt",
-    "escapedName": "iobroker.mqtt",
+    "raw": "iobroker.iobmqtt@2.1.9",
+    "name": "iobroker.iobmqtt",
+    "escapedName": "iobroker.iobmqtt",
     "rawSpec": "2.1.9",
     "saveSpec": null,
     "fetchSpec": "2.1.9"
@@ -39,16 +39,16 @@
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/iobroker.mqtt/-/iobroker.mqtt-2.2.1x.tgz",
-  "_shasum": "8f7c275276470de408f5933d63ede2c7f9b252fc",
-  "_spec": "iobroker.mqtt@2.1.9",
+  "_resolved": "https://registry.npmjs.org/iobroker.iobmqtt/-/iobroker.iobmqtt-2.2.1.tgz",
+  "_shasum": "",
+  "_spec": "iobroker.iobmqtt@2.1.9",
   "_where": "/opt/iobroker/node_modules/iobroker.js-controller",
   "author": {
-    "name": "bluefox",
-    "email": "dogafox@gmail.com"
+    "name": "greyhound",
+    "email": "truegreyhound@gmx.net"
   },
   "bugs": {
-    "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
+    "url": "https://github.com/ioBroker/ioBroker.iobmqtt/issues"
   },
   "bundleDependencies": false,
   "dependencies": {
@@ -66,7 +66,7 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
+  "homepage": "https://github.com/ioBroker/ioBroker.iobmqtt",
   "keywords": [
     "iobroker",
     "notification",
@@ -77,14 +77,14 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/LICENSE"
+      "url": "https://github.com/ioBroker/ioBroker.iobmqtt/blob/master/LICENSE"
     }
   ],
   "main": "main.js",
-  "name": "iobroker.mqtt",
+  "name": "iobroker.iobmqtt",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ioBroker/ioBroker.mqtt.git"
+    "url": "git+https://github.com/ioBroker/ioBroker.iobmqtt.git"
   },
   "scripts": {
     "release": "release-script",

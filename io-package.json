@@ -1,6 +1,6 @@
 {
   "common": {
-    "name": "mqtt",
+    "name": "iobmqtt",
     "version": "2.2.1",
     "news": {
       "2.1.9": {
@@ -158,17 +158,17 @@
         "pl": "Subskrybuj tematy po nawiązaniu połączenia"
       }
     },
-    "title": "MQTT Broker/Client",
+    "title": "MQTT Client for ioBroker message format",
     "titleLang": {
-      "en": "MQTT Broker/Client",
-      "de": "MQTT Broker/Client",
+      "en": "MQTT Client for ioBroker message format",
+      "de": "MQTT Client for ioBroker message format",
       "ru": "Брокер MQTT/Клиент",
-      "pt": "MQTT Broker/Cliente",
-      "nl": "MQTT-makelaar/klant",
-      "fr": "Courtier MQTT/Client",
-      "it": "Broker/Cliente MQTT",
-      "es": "Agente MQTT/Cliente",
-      "pl": "Broker/klient MQTT"
+      "pt": "MQTT Client for ioBroker message format",
+      "nl": "MQTT-klant",
+      "fr": "MQTT Client",
+      "it": "Cliente MQTT",
+      "es": "MQTT Cliente",
+      "pl": "Kklient MQTT"
     },
     "desc": {
       "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
@@ -182,27 +182,28 @@
       "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera"
     },
     "authors": [
-      "bluefox <dogafox@gmail.com>"
+      "greyhound <truegreyhound@gmx.net>"
     ],
     "docs": {
-      "en": "docs/en/mqtt.md",
-      "ru": "docs/ru/mqtt.md"
+      "en": "docs/en/iobmqtt.md",
+      "ru": "docs/ru/iobmqtt.md"
     },
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "compact": true,
     "messagebox": true,
-    "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
+    "readme": "https://github.com/ioBroker/ioBroker.iobmqtt/blob/master/README.md",
     "loglevel": "info",
-    "icon": "mqtt.png",
+    "icon": "iobmqtt.png",
     "materialize": true,
     "keywords": [
       "notification",
       "MQTT",
-      "message"
+      "message",
+      "ioBroker"
     ],
-    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
+    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.iobmqtt/master/admin/iobmqtt.png",
     "type": "protocols",
     "config": {
       "width": 800,
@@ -218,19 +219,17 @@
     "dependencies": {
       "js-controller": ">=1.5.8"
     },
-    "installedFrom": "iobroker.mqtt@2.1.9"
+    "installedFrom": "iobmqtt.mqtt@2.2.1"
   },
   "native": {
     "type": "client",
     "clientId": "",
-    "bind": "0.0.0.0",
     "port": 1883,
     "ssl": false,
     "user": "",
     "pass": "",
     "url": "localhost",
     "patterns": "#",
-    "publishOnChange": true,
     "saveOnChange": true,
     "publishAllOnStart": true,
     "debug": false,
@@ -239,28 +238,24 @@
     "certPrivate": "",
     "certChained": "",
     "prefix": "",
-    "forceCleanSession": "no",
     "sendAckToo": false,
     "sendStateObject": false,
     "webSocket": false,
     "maxTopicLength": 100,
-    "publishOnSubscribe": true,
     "extraSet": false,
-    "sendOnStartInterval": 2000,
-    "sendInterval": 10,
-    "keepalive": 1000,
+    "keepalive_s": 1000,
     "reconnectPeriod": 10,
     "connectTimeout": 30,
     "persistent": false,
-    "defaultQoS": 0,
+    "defaultQoS_subscribe": 0,
+    "defaultQoS_publish": 0,
     "retain": false,
-    "retransmitInterval": 2000,
-    "retransmitCount": 10,
     "storeClientsTime": 1440,
     "ioBrokerMessageFormatActive": true,
     "ioBrokerMessageFormatIgnoreOwnMsg": true,
-    "CheckNamespaceDeepInObjecttreeTo": 3,
-    "ioBrokerMessageFormatIgnoreOther": false
+    "ioBrokerMessageFormatCompressFromLength": 0,
+    "ioBrokerMessageFormatIgnoreOther": true,
+    "CheckNamespaceDeepInObjecttreeTo": 3
   },
   "objects": [],
   "instanceObjects": [

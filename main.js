@@ -1,6 +1,6 @@
 /**
  *
- *      ioBroker mqtt Adapter
+ *      ioBroker iobmqtt Adapter
  *
  *      (c) 2014-2020 bluefox
  *
@@ -78,14 +78,15 @@ function startAdapter(options) {
             // adapter.config.sendAckToo == FALSE --> ack ist egal, nur Änderung state wichtig
 
             // get "old" values from cache
-            const oldVal = states[id] ? states[id].val : null;
-            const oldAck = states[id] ? states[id].ack : null;
+            const oldVal = states[id] ? states[id].state.val : null;
+            const oldAck = states[id] ? states[id].state.ack : null;
+            const oldTS = states[id] ? states[id].state.ts : null;
 
-            states[id] = state;
+            states[id].state = state;
             adapter.log.debug('main.adapter.on.stateChange, oldVal "' + oldVal + '", oldAck: ' + oldAck + ', state.val "' + state.val + '", state.ack: ' + state.ack);
 
             // If value really changed
-            if (!adapter.config.publishOnChange || oldVal !== state.val || oldAck !== state.ack) {
+            if ((oldVal && oldVal !== state.val) || (oldAck && oldAck !== state.ack) || (oldTS && oldTS != state.ts)) {
                 // immer senden || Wert geändert || ack geändert
                 // immer senden - da muss es ja vorher eine Änderung am State gegeben haben, 
 
@@ -101,14 +102,18 @@ function startAdapter(options) {
     return adapter;
 }
 
+
 function processMessage(obj) {
     if (!obj || !obj.command) return;
+    
+    adapter.log.debug('main.processMessage started with obj: ' + JSON.stringify(obj));
 
     switch (obj.command) {
         case 'sendMessage2Client':
             if (client) {
                 adapter.log.debug('Sending message from client to broker via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
-                client.onMessage(obj.message.topic, obj.message.message);
+
+                client.onMessage(obj.message.id, obj.message.topic, obj.message.message);
             } else {
                 adapter.log.debug('MQTT client not started, thus not sending message via topic ' + obj.message.topic + ' (' + obj.message.message + ').');
             }
@@ -117,6 +122,7 @@ function processMessage(obj) {
         case 'sendState2Client':
             if (client) {
                 adapter.log.debug('Sending message from client to broker ' + obj.message.id + ': ' + obj.message.state + ' ...');
+
                 client.onStateChange(obj.message.id, obj.message.state);
             } else {
                 adapter.log.debug('MQTT client not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
@@ -151,14 +157,20 @@ function processMessage(obj) {
             }
         }
     }
-}
+} // processMessage()
+
 
 let cnt = 0;
-function readStatesForPattern(pattern) {
-    adapter.log.debug('main.readStatesForPattern "' + pattern + '" ...');
+function readStatesForPattern(item) {
+    // {"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false}
+    
+    adapter.log.debug('main.readStatesForPattern "' + item.mask + '" ...');
+    let qos = (item.QoS && (parseInt(item.QoS) >= 0  && parseInt(item.QoS) <=2) ? parseInt(item.QoS) : adapter.config.defaultQoS_publish);
+    let retain = (item.retain ? parseBool(item.retain) : (item.retain && parseBool(item.retain) == false ? false : adapter.config.retain));
 
-    adapter.getForeignStates(pattern, (err, res) => {
-        adapter.log.debug('main.readStatesForPattern "' + pattern + '", res: ' + JSON.stringify(res));
+
+    adapter.getForeignStates(item.mask, (err, res) => {
+        adapter.log.debug('main.readStatesForPattern "' + item.mask + '", res: ' + JSON.stringify(res));
 
         if (err) {
             adapter.log.error('main.readStatesForPattern, error: ' + JSON.stringify(err));
@@ -170,7 +182,12 @@ function readStatesForPattern(pattern) {
             states = states || {};
 
             Object.keys(res).filter(id => !messageboxRegex.test(id))
-                .forEach(id => states[id] = res[id]);
+                .forEach((id) => {
+                    states[id] = {};
+                    states[id].state = res[id];
+                    states[id].qos = qos;
+                    states[id].retain = retain;
+            });
         }
 
         // If all patters answered, start client
@@ -182,50 +199,83 @@ function readStatesForPattern(pattern) {
             client = new require('./lib/client')(adapter, states);
         }
     });
-}
+} // readStatesForPattern()
+
 
 function main() {
-    adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
+    adapter.config.keepalive_s = parseInt(adapter.config.keepalive_s, 10) || 10;
+    adapter.config.reconnectPeriod = parseInt(adapter.config.reconnectPeriod, 10) || 1000;
+    adapter.config.connectTimeout = parseInt(adapter.config.connectTimeout, 10) || 30;
+    adapter.config.maxTopicLength = parseInt(adapter.config.maxTopicLength, 10) || 150;
+    adapter.config.ioBrokerMessageFormatCompressFromLength = parseInt(adapter.config.ioBrokerMessageFormatCompressFromLength, 10) || 0;
 
-    adapter.log.debug('adapter.config.publishOnChange: ' + adapter.config.publishOnChange);
+    adapter.config.sendAckToo = adapter.config.sendAckToo === 'true' || adapter.config.sendAckToo === true;
+    adapter.config.saveOnChange = adapter.config.saveOnChange === 'true' || adapter.config.saveOnChange === true;
+    adapter.config.ioBrokerMessageFormatActive = adapter.config.ioBrokerMessageFormatActive === 'true' || adapter.config.ioBrokerMessageFormatActive === true;
+    adapter.config.ioBrokerMessageFormatIgnoreOwnMsg = adapter.config.ioBrokerMessageFormatIgnoreOwnMsg === 'true' || adapter.config.ioBrokerMessageFormatIgnoreOwnMsg === true;
+    adapter.config.ioBrokerMessageFormatIgnoreOther = adapter.config.ioBrokerMessageFormatIgnoreOther === 'true' || adapter.config.ioBrokerMessageFormatIgnoreOther === true;
+
+    adapter.log.debug('adapter.config.keepalive_s: ' + adapter.config.keepalive_s);
+    adapter.log.debug('adapter.config.reconnectPeriod: ' + adapter.config.reconnectPeriod);
+    adapter.log.debug('adapter.config.connectTimeout: ' + adapter.config.connectTimeout);
     adapter.log.debug('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);
     adapter.log.debug('adapter.config.sendAckToo: ' + adapter.config.sendAckToo);
     adapter.log.debug('adapter.config.publish: ' + JSON.stringify(adapter.config.publish));
+    adapter.log.debug('adapter.config.patterns: ' + JSON.stringify(adapter.config.patterns));
+    
+    adapter.log.debug('adapter.config.maxTopicLength: ' + adapter.config.maxTopicLength);
     adapter.log.debug('adapter.config.ioBrokerMessageFormatActive: ' + adapter.config.ioBrokerMessageFormatActive);
     adapter.log.debug('adapter.config.ioBrokerMessageFormatIgnoreOwnMsg: ' + adapter.config.ioBrokerMessageFormatIgnoreOwnMsg);
-    adapter.log.debug('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo);
-    
-    // Subscribe on own variables to publish it
-    if (adapter.config.publish && adapter.config.publish != '') {
-        const parts = adapter.config.publish.split(',');
-        for (let t = 0; t < parts.length; t++) {
-            if (parts[t].indexOf('#') !== -1) {
-                adapter.log.warn('Used MQTT notation for ioBroker in pattern "' + parts[t] + '": use "' + parts[t].replace(/#/g, '*') + ' notation');
-                parts[t] = parts[t].replace(/#/g, '*');
-            }
-            adapter.subscribeForeignStates(parts[t].trim());
-            cnt++;
-            readStatesForPattern(parts[t]);
-        }
-    } else {
-        adapter.log.info('No pattern for subscriptions configured!');
-    }
+    adapter.log.debug('adapter.config.ioBrokerMessageFormatIgnoreOther: ' + adapter.config.ioBrokerMessageFormatIgnoreOther);
+    adapter.log.debug('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo); + ' (default = 2)';
+    adapter.log.debug('adapter.config.ioBrokerMessageFormatCompressFromLength: ' + adapter.config.ioBrokerMessageFormatCompressFromLength) + ' (default = 100)';
 
-    adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;
+    // check parameter plausibility
+    if (adapter.config.CheckNamespaceDeepInObjecttreeTo < 2) adapter.config.CheckNamespaceDeepInObjecttreeTo = 2;
+    if (adapter.config.ioBrokerMessageFormatCompressFromLength < 100) adapter.config.ioBrokerMessageFormatCompressFromLength = 100;
+    
+    adapter.config.defaultQoS_subscribe = parseInt(adapter.config.defaultQoS_subscribe, 10) || 0;
+    adapter.config.defaultQoS_publish = parseInt(adapter.config.defaultQoS_publish, 10) || 0;
     adapter.config.retain = adapter.config.retain === 'true' || adapter.config.retain === true;
     adapter.config.persistent = adapter.config.persistent === 'true' || adapter.config.persistent === true;
-    adapter.config.retransmitInterval = parseInt(adapter.config.retransmitInterval, 10) || 2000;
-    adapter.config.retransmitCount = parseInt(adapter.config.retransmitCount, 10) || 10;
 
-    if (adapter.config.retransmitInterval < adapter.config.sendInterval) {
-        adapter.config.retransmitInterval = adapter.config.sendInterval * 5;
+    if (adapter.config.clientId === '') {
+        adapter.log.error('No ClientID configured, please check konfiguration!');
+
+        return;
+    }
+
+
+    // Subscribe on own variables to publish it
+    if (adapter.config.publish && adapter.config.publish != '') {
+        // [{"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false},{"mask":"logparser.0.*","QoS":"1","retain":false,"enabled":true}]
+
+        adapter.config.publish.forEach((item) => {
+            if ((item) && item.enabled && item.mask && item.mas != '') {
+                adapter.log.info('main.publish, topic: "' + item.mask.trim() + '"; QoS: "' + item.QoS + '"; enabled: "' + item.enabled + '"');
+
+                try {
+                    if (item.mask.indexOf('#') !== -1) {
+                        adapter.log.warn('main.publish, sed MQTT notation for ioBroker id mask "' + item.mask + '": use "' + item.mask.replace(/#/g, '*') + ' notation');
+                        item.mask = item.mask.replace(/#/g, '*');
+                    }
+
+                    adapter.subscribeForeignStates(item.mask.trim());
+                    cnt++;
+                    readStatesForPattern(item);
+                } catch (err) {
+                    adapter.log.error('main.publish, error on publish ' + JSON.stringify(item));
+                }
+            }
+        });
+    } else {
+        adapter.log.info('main, no pattern for subscriptions configured!');
     }
 
     // If no subscription, start client
     if (!cnt) {
         adapter.log.debug('main >> starting client ...');
 
-        //client = new require('./lib/client')(adapter, states);
         client = new require(__dirname + '/lib/client')(adapter, states);
     }
 }

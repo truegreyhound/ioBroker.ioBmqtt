@@ -218,7 +218,7 @@ function main() {
         readStatesForPattern('*'); */
     }
 
-    adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;
+    adapter.config.defaultQoS_subscribe = parseInt(adapter.config.defaultQoS_subscribe, 10) || 0;
     adapter.config.retain = adapter.config.retain === 'true' || adapter.config.retain === true;
     adapter.config.persistent = adapter.config.persistent === 'true' || adapter.config.persistent === true;
     adapter.config.retransmitInterval = parseInt(adapter.config.retransmitInterval, 10) || 2000;

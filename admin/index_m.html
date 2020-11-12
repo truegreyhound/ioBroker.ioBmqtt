@@ -1,463 +1,504 @@
 <html>
-<head>
-<!-- Materialze style -->
-<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
-<link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
+    <head>
+        <!-- Materialze style -->
+        <link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
+        <link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
 
-<script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
-<script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
 
-<script type="text/javascript" src="../../js/translate.js"></script>
-<script type="text/javascript" src="../../lib/js/materialize.js"></script>
-<script type="text/javascript" src="../../js/adapter-settings.js"></script>
-<script type="text/javascript" src="words.js"></script>
+        <script type="text/javascript" src="../../js/translate.js"></script>
+        <script type="text/javascript" src="../../lib/js/materialize.js"></script>
+        <script type="text/javascript" src="../../js/adapter-settings.js"></script>
+        <script type="text/javascript" src="words.js"></script>
 
-<script type="text/javascript">
-    var onChange;
+        <script type="text/javascript">
+            var onChange;
 
-    function encrypt(key, value) {
-        var result = '';
-        for(var i = 0; i < value.length; ++i) {
-            result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-        }
-        return result;
-    }
+            function encrypt(key, value) {
+                var result = '';
+                for(var i = 0; i < value.length; ++i) {
+                    result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+                }
+                return result;
+            }
 
-    function decrypt(key, value) {
-        var result = '';
-        for(var i = 0; i < value.length; ++i) {
-            result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-        }
-        return result;
-    }
+            function decrypt(key, value) {
+                var result = '';
+                for(var i = 0; i < value.length; ++i) {
+                    result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+                }
+                return result;
+            }
 
-    function showHideSettings() {
-        if ($('#type').val() === 'client') {
-            $('#_clientId').show();
-            $('#_url').show();
-            $('#_bind').hide();
-            $('#test').show();
-            $('#_patterns').show();
-            $('#_certPublic').hide();
-            $('#_certPrivate').hide();
-            $('#_certChained').hide();
-            $('#_webSocket').hide();
-            $('#_publishOnSubscribe').hide();
-            $('#_persistent').show();
-            $('#_forceCleanSession').hide();
-        } else {
-            $('#_clientId').hide();
-            $('#_url').hide();
-            $('#_bind').show();
-            $('#test').hide();
-            $('#_patterns').hide();
-            $('#_webSocket').show();
-            $('#_persistent').hide();
-            $('#_forceCleanSession').show();
+            function showHideSettings() {
+                $('#_clientId').show();
+                $('#_url').show();
+                $('#test').show();
 
-            if ($('#ssl').prop('checked')) {
-                $('#_certPublic').show();
-                $('#_certPrivate').show();
-                $('#_certChained').show();
-            } else {
                 $('#_certPublic').hide();
                 $('#_certPrivate').hide();
                 $('#_certChained').hide();
+                $('#_webSocket').hide();        // hide ??
+                $('#_persistent').show();
+
+//                $('#_patterns').show();
+ 
+                if ($('#ssl').prop('checked')) {
+                    $('#_certPublic').show();
+                    $('#_certPrivate').show();
+                    $('#_certChained').show();
+                } else {
+                    $('#_certPublic').hide();
+                    $('#_certPrivate').hide();
+                    $('#_certChained').hide();
+                }
             }
 
-            $('#_publishOnSubscribe').show();
-        }
-    }
+            function init() {
+                showHideSettings();
+                $('#type').on('change', showHideSettings);
+                $('#ssl').on('change', showHideSettings);
+                $('#test').on('click', test);
+            }
 
-    function init() {
-        showHideSettings();
-        $('#type').on('change', showHideSettings);
-        $('#ssl').on('change', showHideSettings);
-        $('#test').on('click', test);
-    }
+            function setValue(id, value, onChange) {
+                var $value = $('#' + id + '.value');
+                if ($value.attr('type') === 'checkbox') {
+                    $value.prop('checked', value).change(function() {
+                        onChange();
+                    });
+                } else {
+					var val = $value.data('crypt') && value ? decrypt(secret, value) : value;
+                    $value.val(val).change(function() {
+                        onChange();
+                    }).keyup(function() {
+                        // Check that only numbers entered
+                        if ($(this).hasClass('number')) {
+                            var val = $(this).val();
+                            if (val) {
+                                var newVal = '';
+                                for (var i = 0; i < val.length; i++) {
+                                    if (val[i] >= '0' && val[i] <= '9') {
+                                        newVal += val[i];
+                                    }
+                                }
 
-    function setValue(id, value) {
-        var $value = $('#' + id + '.value');
-        if ($value.attr('type') === 'checkbox') {
-            $value.prop('checked', value).change(function() {
-                onChange();
-            });
-        } else {
-            $value.val(value).change(function() {
-                onChange();
-            }).keyup(function() {
-                // Check that only numbers entered
-                if ($(this).hasClass('number')) {
-                    var val = $(this).val();
-                    if (val) {
-                        var newVal = '';
-                        for (var i = 0; i < val.length; i++) {
-                            if (val[i] >= '0' && val[i] <= '9') {
-                                newVal += val[i];
+                                if (val != newVal) $(this).val(newVal);
                             }
                         }
 
-                        if (val != newVal) $(this).val(newVal);
+                        onChange();
+                    });
+                }
+            }
+
+            function loadHelper(settings, param, subparam) {
+                if (!settings) return;
+                
+                if (subparam && param) {
+                    for (var key in settings[param][subparam]) {
+                        if (!settings[param][subparam].hasOwnProperty(key)) continue;
+                        if (typeof settings[param][subparam][key] !== 'object') {
+                            setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
+                        } else {
+                            alert('4th level is not supported');
+                        }
+                    }
+                } else if (param) {
+                    for (var key in settings[param]) {
+                        if (!settings[param].hasOwnProperty(key)) continue;
+                        if (typeof settings[param][key] !== 'object') {
+                            setValue(param + '_' + key, settings[param][key]);
+                        } else {
+                            loadHelper(settings, param, key);
+                        }
+                    }
+                } else {
+                    for (var key in settings) {
+                        if (!settings.hasOwnProperty(key)) continue;
+                        if (typeof settings[key] !== 'object') {
+                            if (key === 'pass') {
+                                settings[key] = decrypt('Zgfr56gFe87jJOM', settings[key]);
+                            }
+                            setValue(key, settings[key]);
+                        } else {
+                            loadHelper(settings, key);
+                        }
                     }
                 }
-
-                onChange();
-            });
-        }
-    }
-
-    function loadHelper(settings, param, subparam) {
-        if (!settings) return;
-        
-        if (subparam && param) {
-            for (var key in settings[param][subparam]) {
-                if (!settings[param][subparam].hasOwnProperty(key)) continue;
-                if (typeof settings[param][subparam][key] !== 'object') {
-                    setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
-                } else {
-                    alert('4th level is not supported');
-                }
             }
-        } else if (param) {
-            for (var key in settings[param]) {
-                if (!settings[param].hasOwnProperty(key)) continue;
-                if (typeof settings[param][key] !== 'object') {
-                    setValue(param + '_' + key, settings[param][key]);
-                } else {
-                    loadHelper(settings, param, key);
-                }
+
+            var patterns = [];
+            var publish = [];
+
+            // the function loadSettings has to exist ...
+            function load(settings, _onChange) {
+				socket.emit('getState', 'system.adapter.' + adapter + '.' + instance + '.alive', function (err, state) {
+                	active =  (state && state.val);
+					if (!active) {
+						var content = '<div class="modal-content"><h4>' + _('Error') + '</h4><p>' + _('You have to start your ioBroker.' + adapter + ' adapter before you can use this function!') + '</p></div><div class="modal-footer"><a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a></div>';
+						$('.modal').append(content);
+						$('.modal').modal();
+						//return;
+					}
+
+					let g_onChange = onChange;
+
+                    $('select').select();
+                });
+                
+                onChange = _onChange;
+
+                patterns = settings.patterns || [];
+		        values2table('patterns', patterns, onChange);
+                publish = settings.publish || [];
+		        values2table('publish', publish, onChange);
+                
+                settings.sendAckToo = settings.sendAckToo || false;
+                settings.sendStateObject = settings.sendStateObject || false;
+                settings.webSocket  = settings.webSocket  || false;
+                settings.defaultQoS_subscribe = (settings.defaultQoS_subscribe === '' || settings.defaultQoS_subscribe === -1 || settings.defaultQoS_subscribe === '-1') ? -1 : settings.defaultQoS_subscribe || 0;
+                settings.defaultQoS_publish = (settings.defaultQoS_publish === '' || settings.defaultQoS_publish === -1 || settings.defaultQoS_publish === '-1') ? -1 : settings.defaultQoS_publish || 0;
+                settings.clientId   = settings.clientId   || '';
+                loadHelper(settings);
+                $('#pass_confirm').val($('#pass').val());
+
+                init();
+                fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
+                fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
+                fillSelectCertificates('#certChained', 'chained', settings.certChained);
+
+                onChange(false);
+                M && M.updateTextFields();
             }
-        } else {
-            for (var key in settings) {
-                if (!settings.hasOwnProperty(key)) continue;
-                if (typeof settings[key] !== 'object') {
-                    if (key === 'pass') {
-                        settings[key] = decrypt('Zgfr56gFe87jJOM', settings[key]);
+
+            function test() {
+                // var newValue = JSON.stringify(getSettings());
+                if (!common.enabled) {
+                    showToast(null, _('Enable first the adapter to test client.'));
+                    return;
+                }
+                if (changed) {
+                    showToast(null, _('First save the adapter'));
+                    return;
+                }
+                $('#test').addClass('disabled');
+                sendTo('iobmqtt.' + instance, 'test', getSettings(), function (result) {
+                    $('#test').removeClass('disabled');
+                    showMessage(_(result), _('Result: '));
+                });
+            }
+
+            function saveHelper(obj, id, value) {
+                var ids = id.split('_');
+
+                if (ids.length === 1) {
+                    if (ids[0] === 'pass') value = encrypt('Zgfr56gFe87jJOM', value);
+                    obj[id] = value;
+                } else if (ids.length === 2) {
+                    if (!obj[ids[0]]) obj[ids[0]] = {};
+                    obj[ids[0]][ids[1]] = value;
+                } else if (ids.length === 3) {
+                    if (!obj[ids[0]]) obj[ids[0]] = {};
+                    if (!obj[ids[0]][ids[1]]) obj[ids[0]][ids[1]] = {};
+                    obj[ids[0]][ids[1]][ids[2]] = value;
+                }
+                return obj;
+            } // saveHelper()
+
+            function getSettings() {
+                var obj = {};
+                $('.value').each(function () {
+                    var $this = $(this);
+                    var id = $this.attr('id');
+
+                    if ($this.attr('type') === 'checkbox') {
+                        obj = saveHelper(obj, id, $this.prop('checked'))
+                    } else {
+                        obj = saveHelper(obj, id, $this.val())
                     }
-                    setValue(key, settings[key]);
-                } else {
-                    loadHelper(settings, key);
+                });
+                obj.defaultQoS_subscribe = parseInt(obj.defaultQoS_subscribe, 10) || 0;
+                obj.defaultQoS_publish = parseInt(obj.defaultQoS_publish, 10) || 0;
+                
+                obj.patterns = table2values('patterns');
+                obj.publish = table2values('publish');
+
+                return obj;
+            } // getSettings()
+
+            function save(callback) {
+                if ($('#pass').val() !== $('#pass_confirm').val()) {
+                    showMessage(_('Password confirmation is not equal with password'));
+                    return;
                 }
+
+                callback(getSettings());
             }
-        }
-    }
+        </script>
 
-    // the function loadSettings has to exist ...
-    function load(settings, _onChange) {
-        onChange = _onChange;
-        settings.retransmitInterval = settings.retransmitInterval || 2000;
-        settings.retransmitCount = settings.retransmitCount || 10;
-        settings.sendAckToo = settings.sendAckToo || false;
-        settings.sendStateObject = settings.sendStateObject || false;
-        settings.webSocket  = settings.webSocket  || false;
-        settings.defaultQoS = (settings.defaultQoS === '' || settings.defaultQoS === -1 || settings.defaultQoS === '-1') ? -1 : settings.defaultQoS || 0;
-        if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
-        if (settings.sendInterval === undefined) settings.sendInterval = 10;
-        settings.clientId   = settings.clientId   || '';
-        loadHelper(settings);
-        $('#pass_confirm').val($('#pass').val());
-
-        init();
-        fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
-        fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
-        fillSelectCertificates('#certChained', 'chained', settings.certChained);
-
-        getIPs(function(ips) {
-            for (var i = 0; i < ips.length; i++) {
-                $('#bind').append('<option value="' + ips[i].address + '">' + ips[i].name + '</option>');
+        <style>
+            .sub-title {
+                margin-top: 2rem!important;
+                padding: 0.5rem;
+                background: #64b5f6;
+                color: white;
             }
-            $('#bind.value').val(settings.bind).select();
-        });
-
-        onChange(false);
-        M && M.updateTextFields();
-    }
-
-    function test() {
-        // var newValue = JSON.stringify(getSettings());
-        if (!common.enabled) {
-            showToast(null, _('Enable first the adapter to test client.'));
-            return;
-        }
-        if (changed) {
-            showToast(null, _('First save the adapter'));
-            return;
-        }
-        $('#test').addClass('disabled');
-        sendTo('mqtt.' + instance, 'test', getSettings(), function (result) {
-            $('#test').removeClass('disabled');
-            showMessage(_(result), _('Result: '));
-        });
-    }
-
-    function saveHelper(obj, id, value) {
-        var ids = id.split('_');
-
-        if (ids.length === 1) {
-            if (ids[0] === 'pass') value = encrypt('Zgfr56gFe87jJOM', value);
-            obj[id] = value;
-        } else if (ids.length === 2) {
-            if (!obj[ids[0]]) obj[ids[0]] = {};
-            obj[ids[0]][ids[1]] = value;
-        } else if (ids.length === 3) {
-            if (!obj[ids[0]]) obj[ids[0]] = {};
-            if (!obj[ids[0]][ids[1]]) obj[ids[0]][ids[1]] = {};
-            obj[ids[0]][ids[1]][ids[2]] = value;
-        }
-        return obj;
-    }
-
-    function getSettings() {
-        var obj = {};
-        $('.value').each(function () {
-            var $this = $(this);
-            var id = $this.attr('id');
-
-            if ($this.attr('type') === 'checkbox') {
-                obj = saveHelper(obj, id, $this.prop('checked'))
-            } else {
-                obj = saveHelper(obj, id, $this.val())
+            .main-page {
+                height: 100%;
+                overflow: hidden;
+                margin-bottom: 0 !important;
             }
-        });
-        obj.defaultQoS = parseInt(obj.defaultQoS, 10) || 0;
-
-        return obj;
-    }
-
-    function save(callback) {
-        if ($('#pass').val() !== $('#pass_confirm').val()) {
-            showMessage(_('Password confirmation is not equal with password'));
-            return;
-        }
-        if ($('#ssl').prop('checked') && $('#type').val() === 'server' && (!$('#certPrivate').val() || !$('#certPublic').val())) {
-            showMessage(_('Set certificates or load it first in the system settings (right top).'));
-            return;
-        }
-
-        callback(getSettings());
-    }
-</script>
-
-<style>
-    .sub-title {
-        margin-top: 2rem!important;
-        padding: 0.5rem;
-        background: #64b5f6;
-        color: white;
-    }
-    .main-page {
-        height: 100%;
-        overflow: hidden;
-        margin-bottom: 0 !important;
-    }
-    .page {
-        height: calc(100% - 34px) !important;
-    }
-</style>
-</head>
-<body>
-    <!-- you have to put your config page in a div with id adapter-container -->
-    <div class="m adapter-container">
-        <div class="main-page row">
-            <div class="col s12">
-                <ul class="tabs">
-                    <li class="tab col s4"><a href="#tab-main" class="translate active">Connection</a></li>
-                    <li class="tab col s4"><a href="#tab-mqtt" class="translate">MQTT Settings</a></li>
-                </ul>
-            </div>
-            <div id="tab-main" class="col s12 page">
-                <div class="row">
-                    <div class="col s6">
-                        <img src="mqtt.png" class="logo">
+            .page {
+                height: calc(100% - 34px) !important;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- you have to put your config page in a div with id adapter-container -->
+        <div class="m adapter-container">
+            <div class="main-page row">
+                <div class="col s12">
+                    <ul class="tabs">
+                        <li class="tab col s3"><a href="#tab-main" class="translate active">Connection</a></li>
+                        <li class="tab col s3"><a href="#tab-mqtt-generell" class="translate">MQTT generell settings</a></li>
+                        <li class="tab col s3"><a href="#tab-mqtt-subscribe" class="translate">MQTT subscribe settings</a></li>
+                        <li class="tab col s3"><a href="#tab-mqtt-publish" class="translate">MQTT publish settings</a></li>
+                    </ul>
+                </div>
+                <div id="tab-main" class="col s12 page">
+                    <div class="row">
+                        <div class="col s6">
+                            <img src="iobmqtt.png" class="logo">
+                        </div>
+                    </div>
+                    <h6 class="translate sub-title">Connection settings</h6>
+                    <div class="row">
+                        <div class="input-field col s12 m6 l4" id="_url">
+                            <input type="text" id="url" class="value" />
+                            <label class="translate" for="url">URL:</label>
+                        </div>
+                        <div class="input-field col s12 m6 l4">
+                            <input id="port" type="number" min="1" max="65565" class="value" />
+                            <label class="translate" for="port">Port:</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12 m12">
+                            <input id="ssl" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="ssl">Secure:</span>
+                        </div>
+                        <div class="input-field col s12 m6 l4" id="_certPublic">
+                            <select id="certPublic" class="value"></select>
+                            <label class="translate" for="certPublic">Public certificate:</label>
+                        </div>
+                        <div class="input-field col s12 m6 l4" id="_certPrivate">
+                            <select id="certPrivate" class="value"></select>
+                            <label class="translate" for="certPrivate">Private certificate:</label>
+                        </div>
+                        <div class="input-field col s12 m6 l4" id="_certChained">
+                            <select id="certChained" class="value"></select>
+                            <label class="translate" for="certChained">Chained certificate:</label>
+                        </div>
+                    </div>
+                    <h6 class="translate sub-title">Authentication settings</h6>
+                    <div class="row">
+                        <div class="input-field col s12 m6 l4">
+                            <input id="user" type="text" size="17" class="value" />
+                            <label class="translate" for="user">User:</label>
+                        </div>
+                        <div class="input-field col s12 m6 l4">
+                            <input id="pass" type="password" size="17" class="value" />
+                            <label class="translate" for="pass">Password:</label>
+                        </div>
+                        <div class="input-field col s12 m6 l4">
+                            <input id="pass_confirm" type="password" size="17" />
+                            <label class="translate" for="pass_confirm">Password confirmation:</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <a id="test" class="btn"><span class="translate">Test connection</span></a>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="input-field col s12 m6 l4">
-                        <select id="type" class="value">
-                            <option value="client" class="translate">Client</option>
-                            <option value="server" class="translate">Server</option>
-                        </select>
-                        <label class="translate" for="type">Type:</label>
+                <div id="tab-mqtt-generell" class="col s12 page">
+                    <div class="row">
+                        <div class="col s6">
+                            <img src="iobmqtt.png" class="logo">
+                        </div>
                     </div>
-                    <div class="input-field col s12 m6 l4" id="_webSocket">
-                        <input type="checkbox" id="webSocket" class="value filled-in" />
-                        <span class="translate" for="webSocket">Use WebSockets:</span>
+                    <h6 class="translate sub-title">Generell MQTT settings</h6>
+                    <div class="row">
+                        <div id="_clientId" class="input-field col s12 m6 l3">
+                            <input id="clientId" type="text" class="value" size="17" />
+                            <label class="translate" for="clientId">Client ID:</label>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="prefix" type="text" size="17" class="value" />
+                            <label class="translate" for="prefix">Prefix for topics:</label>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="keepalive_s" type="number" min="0" max="65565" class="value" />
+                            <label for="keepalive_s"><span class="translate">keepalive</span> (<span class="translate">s</span>)</label>
+                        </div>
                     </div>
-                </div>
-                <h6 class="translate sub-title">Connection settings</h6>
-                <div class="row">
-                    <div class="input-field col s12 m6 l4" id="_url">
-                        <input type="text" id="url" class="value" />
-                        <label class="translate" for="url">URL:</label>
+                    <div class="row">
+                        <div id="_persistent" class="input-field col s12 m6 l3">
+                            <input id="persistent" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="persistent">Set Persistent Session (disabled = clean)</span>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="extraSet" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="extraSet">Use different topic names for set and get:</span>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="sendStateObject" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="sendStateObject">Send/receive state object as mqtt message</span>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="debug" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="debug">Trace output for every message:</span>
+                        </div>
                     </div>
-                    <div class="input-field col s12 m6 l4" id="_bind">
-                        <select class="value" id="bind"></select>
-                        <label class="translate" for="bind">IP address</label>
-                    </div>
-                    <div class="input-field col s12 m6 l4">
-                        <input id="port" type="number" min="1" max="65565" class="value" />
-                        <label class="translate" for="port">Port:</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="input-field col s12 m12">
-                        <input id="ssl" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="ssl">Secure:</span>
-                    </div>
-                    <div class="input-field col s12 m6 l4" id="_certPublic">
-                        <select id="certPublic" class="value"></select>
-                        <label class="translate" for="certPublic">Public certificate:</label>
-                    </div>
-                    <div class="input-field col s12 m6 l4" id="_certPrivate">
-                        <select id="certPrivate" class="value"></select>
-                        <label class="translate" for="certPrivate">Private certificate:</label>
-                    </div>
-                    <div class="input-field col s12 m6 l4" id="_certChained">
-                        <select id="certChained" class="value"></select>
-                        <label class="translate" for="certChained">Chained certificate:</label>
-                    </div>
-                </div>
-                <h6 class="translate sub-title">Authentication settings</h6>
-                <div class="row">
-                    <div class="input-field col s12 m6 l4">
-                        <input id="user" type="text" size="17" class="value" />
-                        <label class="translate" for="user">User:</label>
-                    </div>
-                    <div class="input-field col s12 m6 l4">
-                        <input id="pass" type="password" size="17" class="value" />
-                        <label class="translate" for="pass">Password:</label>
-                    </div>
-                    <div class="input-field col s12 m6 l4">
-                        <input id="pass_confirm" type="password" size="17" />
-                        <label class="translate" for="pass_confirm">Password confirmation:</label>
+                    <h6 class="translate sub-title">ioBroker MQTT message format settings</h6>
+                    <div class="row">
+                        <div class="input-field col s12 m6 l3">
+                            <input id="ioBrokerMessageFormatActive" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="ioBrokerMessageFormatActive">Use ioBroker mqtt message format</span>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="ioBrokerMessageFormatIgnoreOwnMsg" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="ioBrokerMessageFormatIgnoreOwnMsg">ignore own messages</span>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="ioBrokerMessageFormatIgnoreOther" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="ioBrokerMessageFormatIgnoreOther">ignore non ioBroker messages</span>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="ioBrokerMessageFormatCompressFromLength" type="number" min="0" max="2024" class="value" />
+                            <span class="translate" for="ioBrokerMessageFormatCompressFromLength">compress from length, 0 = disbled</span>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col s12">
-                        <a id="test" class="btn"><span class="translate">Test connection</span></a>
+                <div id="tab-mqtt-subscribe" class="col s12 page">
+                    <div class="row">
+                        <div class="col s6">
+                            <img src="iobmqtt.png" class="logo">
+                        </div>
                     </div>
+                    <h6 class="translate sub-title">MQTT subscribe settings</h6>
+                    <div class="row">
+                        <div class="input-field col s12 m6 l3">
+                            <input id="maxTopicLength" type="text" class="value" size="17" />
+                            <label for="maxTopicLength" class="translate">Max topic length (<span class="translate">chars</span>)</label>
+                        </div>
+                        <div id="_defaultQoS_subscribe" class="input-field col s12 m6 l3">
+                            <select id="defaultQoS_subscribe" class="value">
+                                <option value="0" class="translate">0 - At most once</option>
+                                <option value="1" class="translate">1 - At least once</option>
+                                <option value="2" class="translate">2 - Exactly once</option>
+                            </select>
+                            <label class="translate" for="defaultQoS_subscribe">QoS (Quality of Service):</label>
+                        </div>
+                   </div>
+					<div id="patterns">
+						<div class="row">
+							<div class="col s12">
+								<a class="btn-floating waves-effect waves-light table-button-add"><i class="material-icons">add</i></a>
+                                <a class="waves-effect waves-light table-button-add translate">  Here you can add and delete pattern for subscribing pattern. Only enabled pattern will be used, empty lines are ignored.<br>  If no QoS in the tabele set, the default Qos value is used.</a>
+<!--                                <a class="waves-effect waves-light modal-trigger translate">Here you can add and delete pattern for subscribing pattern. Only enabled pattern will be used, empty lines are ignored.</a> -->
+                            </div>
+						</div>
+						<div class="row">
+							<div class="col s11">
+								<table class="table-values" style="width: 100%;">
+									<thead>
+										<tr>
+											<th data-name="_index" style="width: 5%" class="center-align translate"></th>
+											<th data-name="pattern" style="width: 70%" class="translate" for="pattern">pattern</th>
+<!--											<th data-name="QoS"  style="width: 10%" data-type="combobox" class="translate">QoS</th> -->
+											<th data-name="QoS"  style="width: 10%" class="translate">Default QoS</th>
+											<th data-name="enabled"  style="width: 10%" data-type="checkbox" class="translate">Enabled</th>
+											<th data-buttons="delete" style="width: 5%"></th>
+										</tr>
+									</thead>
+								</table>
+							</div>
+						</div>
+					</div>
+                    <h6 class="translate sub-title">ioBroker save settings</h6>
+                    <div class="row">
+                        <div class="input-field col s12 m6 l3">
+                            <input id="CheckNamespaceDeepInObjecttreeTo" type="number" min="2" max="5" class="value" />
+                            <span class="translate" for="CheckNamespaceDeepInObjecttreeTo">how deep check namspace before save under mqtt adapter (2 - 5)</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12 m6 l3">
+                            <input id="saveOnChange" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="saveOnChange">Store only on change</span>
+                        </div>
+                     </div>
                 </div>
-            </div>
-            <div id="tab-mqtt" class="col s12 page">
-                <div class="row">
-                    <div class="col s6">
-                        <img src="mqtt.png" class="logo">
+                <div id="tab-mqtt-publish" class="col s12 page">
+                    <div class="row">
+                        <div class="col s6">
+                            <img src="iobmqtt.png" class="logo">
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div id="_patterns" class="input-field col s12 m6 l3">
-                        <input id="patterns" type="text" size="17" class="value" />
-                        <label for="patterns" class="translate">Patterns:</label> (
-                        <span class="translate">Divided by comma</span>)
+                    <h6 class="translate sub-title">MQTT publish settings</h6>
+                    <div class="row">
+                        <div class="input-field col s12 m6 l3">
+                            <input id="publishAllOnStart" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="publishAllOnStart">Publish all states at start:</span>
+                        </div>
+                        <div id="_defaultQoS_publish" class="input-field col s12 m6 l3">
+                                <select id="defaultQoS_publish" class="value">
+                                <option value="0" class="translate">0 - At most once</option>
+                                <option value="1" class="translate">1 - At least once</option>
+                                <option value="2" class="translate">2 - Exactly once</option>
+                            </select>
+                            <label class="translate" for="defaultQoS_publish">QoS (Quality of Service):</label>
+                        </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="retain" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="retain">Set retain flag (default)</span>
+                        </div>
                     </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="prefix" type="text" size="17" class="value" />
-                        <label class="translate" for="prefix">Prefix for topics:</label>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="publish" type="text" size="17" class="value" />
-                        <label for="publish" class="translate">Mask to publish own states:</label> (
-                        <span class="translate">Mask to publish</span>)
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="input-field col s12 m6 l3">
-                        <input id="publishOnChange" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="publishOnChange">publish only on change:</span>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="saveOnChange" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="saveOnChange">Store only on change:</span>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="publishAllOnStart" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="publishAllOnStart">Publish all states at start:</span>
-                    </div>
-                    <div id="_publishOnSubscribe" class="input-field col s12 m6 l3">
-                        <input id="publishOnSubscribe" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="publishOnSubscribe">Publish states on subscribe:</span>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="debug" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="debug">Trace output for every message:</span>
-                    </div>
+					<div id="publish">
+						<div class="row">
+							<div class="col s12">
+								<a class="btn-floating waves-effect waves-light table-button-add"><i class="material-icons">add</i></a>
+                                <a class="waves-effect waves-light table-button-add translate">  Here you can add and delete ioBroker State masks for publishing. Only enabled masks will be used, empty lines are ignored.<br>  If no QoS or retain flag in the tabele set, the default Qos or retain value is used.</a>
+                            </div>
+						</div>
+						<div class="row">
+							<div class="col s11">
+								<table class="table-values" style="width: 100%;">
+									<thead>
+										<tr>
+											<th data-name="_index" style="width: 5%" class="center-align translate"></th>
+											<th data-name="mask" style="width: 60%" class="translate" for="mask">mask</th>
+<!--											<th data-name="QoS"  style="width: 10%" data-type="combobox" class="translate">QoS</th> -->
+											<th data-name="QoS"  style="width: 10%" class="translate">Default QoS</th>
+											<th data-name="retain"  style="width: 10%" data-type="checkbox" class="translate">Retain</th>
+											<th data-name="enabled"  style="width: 10%" data-type="checkbox" class="translate">Enabled</th>
+											<th data-buttons="delete" style="width: 5%"></th>
+										</tr>
+									</thead>
+								</table>
+							</div>
+						</div>
+					</div>
+                    <h6 class="translate sub-title">ioBroker subscribe settings</h6>
                     <div class="input-field col s12 m6 l3">
                         <input id="sendAckToo" type="checkbox" class="value filled-in" />
                         <span class="translate" for="sendAckToo">Send states (ack=true) too:</span>
                     </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="extraSet" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="extraSet">Use different topic names for set and get:</span>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="sendStateObject" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="sendStateObject">Send state object as mqtt message</span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div id="_clientId" class="input-field col s12 m6 l3">
-                        <input id="clientId" type="text" class="value" size="17" />
-                        <label class="translate" for="clientId">Client ID:</label>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="maxTopicLength" type="text" class="value" size="17" />
-                        <label for="maxTopicLength" class="translate">Max topic length:(<span class="translate">chars</span>)</label>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="sendOnStartInterval" type="text" class="value" size="17" />
-                        <label for="sendOnStartInterval"><span class="translate">Interval before send topics by connection:</span> (<span class="translate">ms</span>)</label>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="sendInterval" type="text" class="value" size="17" />
-                        <label for="sendInterval"><span class="translate">Send interval:</span> (<span class="translate">ms</span>)</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="input-field col s12 m6 l3">
-                        <input id="ioBrokerMessageFormatActive" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="ioBrokerMessageFormatActive">Use ioBroker mqtt message format</span>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="ioBrokerMessageFormatIgnoreOwnMsg" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="ioBrokerMessageFormatIgnoreOwnMsg">ignore own messages</span>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="ioBrokerMessageFormatIgnoreOther" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="ioBrokerMessageFormatIgnoreOther">ignore non ioBroker messages</span>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="CheckNamespaceDeepInObjecttreeTo" type="text" class="value filled-in" />
-                        <span class="translate" for="CheckNamespaceDeepInObjecttreeTo">how deep check namspace before save under mqtt adapter (>=2)</span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div id="_defaultQoS" class="input-field col s12 m6 l3">
-                        <select id="defaultQoS" class="value">
-                            <option value="0" class="translate">0 - At most once</option>
-                            <option value="1" class="translate">1 - At least once</option>
-                            <option value="2" class="translate">2 - Exactly once</option>
-                        </select>
-                        <label class="translate" for="defaultQoS">Default QoS:</label>
-                    </div>
-                    <div class="input-field col s12 m6 l3">
-                        <input id="retain" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="retain">Set retain flag</span>
-                    </div>
-                    <div id="_persistent" class="input-field col s12 m6 l3">
-                        <input id="persistent" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="persistent">Persistent Session</span>
-                    </div>
-                    <div id="_forceCleanSession" class="input-field col s12 m6 l3">
-                        <select id="forceCleanSession" class="value">
-                            <option value="no" class="translate">Use client settings</option>
-                            <option value="clean" class="translate">Always clean sessions for all clients</option>
-                            <option value="keep" class="translate">Always keep sessions for all clients</option>
-                        </select>
-                        <label class="translate" for="defaultQoS">Force clean session</label>
-                    </div>
-                </div>
+                 </div>
             </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>
