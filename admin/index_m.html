@@ -13,7 +13,8 @@
         <script type="text/javascript" src="words.js"></script>
 
         <script type="text/javascript">
-            var onChange;
+            var onChange = null;
+            var secret;
 
             function encrypt(key, value) {
                 var result = '';
@@ -62,7 +63,7 @@
                 $('#test').on('click', test);
             }
 
-            function setValue(id, value, onChange) {
+            function setValue(id, value) {
                 var $value = $('#' + id + '.value');
                 if ($value.attr('type') === 'checkbox') {
                     $value.prop('checked', value).change(function() {
@@ -83,11 +84,9 @@
                                         newVal += val[i];
                                     }
                                 }
-
                                 if (val != newVal) $(this).val(newVal);
                             }
                         }
-
                         onChange();
                     });
                 }
@@ -119,7 +118,7 @@
                         if (!settings.hasOwnProperty(key)) continue;
                         if (typeof settings[key] !== 'object') {
                             if (key === 'pass') {
-                                settings[key] = decrypt('Zgfr56gFe87jJOM', settings[key]);
+                                settings[key] = decrypt(secret, settings[key]);
                             }
                             setValue(key, settings[key]);
                         } else {
@@ -134,7 +133,7 @@
 
             // the function loadSettings has to exist ...
             function load(settings, _onChange) {
-				socket.emit('getState', 'system.adapter.' + adapter + '.' + instance + '.alive', function (err, state) {
+/* !P!				socket.emit('getState', 'system.adapter.' + adapter + '.' + instance + '.alive', function (err, state) {
                 	active =  (state && state.val);
 					if (!active) {
 						var content = '<div class="modal-content"><h4>' + _('Error') + '</h4><p>' + _('You have to start your ioBroker.' + adapter + ' adapter before you can use this function!') + '</p></div><div class="modal-footer"><a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a></div>';
@@ -143,34 +142,41 @@
 						//return;
 					}
 
-					let g_onChange = onChange;
+					let g_onChange = _onChange;
 
                     $('select').select();
-                });
+                }); */
                 
                 onChange = _onChange;
 
-                patterns = settings.patterns || [];
-		        values2table('patterns', patterns, onChange);
-                publish = settings.publish || [];
-		        values2table('publish', publish, onChange);
-                
-                settings.sendAckToo = settings.sendAckToo || false;
-                settings.sendStateObject = settings.sendStateObject || false;
-                settings.webSocket  = settings.webSocket  || false;
-                settings.defaultQoS_subscribe = (settings.defaultQoS_subscribe === '' || settings.defaultQoS_subscribe === -1 || settings.defaultQoS_subscribe === '-1') ? -1 : settings.defaultQoS_subscribe || 0;
-                settings.defaultQoS_publish = (settings.defaultQoS_publish === '' || settings.defaultQoS_publish === -1 || settings.defaultQoS_publish === '-1') ? -1 : settings.defaultQoS_publish || 0;
-                settings.clientId   = settings.clientId   || '';
-                loadHelper(settings);
-                $('#pass_confirm').val($('#pass').val());
+                socket.emit('getObject', 'system.config', function (err, obj) {
+                    secret = (obj.native ? obj.native.secret : '') || 'Zgfl56gFe87jJOM';
 
-                init();
-                fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
-                fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
-                fillSelectCertificates('#certChained', 'chained', settings.certChained);
+                    patterns = settings.patterns || [];
+                    values2table('patterns', patterns, onChange);
+                    publish = settings.publish || [];
+                    values2table('publish', publish, onChange);
+                    
+                    settings.sendAckToo = settings.sendAckToo || false;
+                    settings.sendStateObject = settings.sendStateObject || false;
+                    settings.webSocket  = settings.webSocket || false;
+                    settings.defaultQoSsubscribe = (settings.defaultQoSsubscribe === '' || settings.defaultQoSsubscribe === -1 || settings.defaultQoSsubscribe === '-1') ? -1 : settings.defaultQoSsubscribe || 0;
+                    settings.defaultQoSpublish = (settings.defaultQoSpublish === '' || settings.defaultQoSpublish === -1 || settings.defaultQoSpublish === '-1') ? -1 : settings.defaultQoSpublish || 0;
+                    settings.clientId   = settings.clientId || '';
+                    settings.CheckNamespaceDeepInObjecttreeTo = (settings.CheckNamespaceDeepInObjecttreeTo === '' || settings.CheckNamespaceDeepInObjecttreeTo === -1 || settings.CheckNamespaceDeepInObjecttreeTo === '-1') ? -1 : settings.CheckNamespaceDeepInObjecttreeTo || 3;
 
-                onChange(false);
-                M && M.updateTextFields();
+                    loadHelper(settings);
+
+                    $('#pass_confirm').val($('#pass').val());
+
+                    init();
+                    fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
+                    fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
+                    fillSelectCertificates('#certChained', 'chained', settings.certChained);
+
+                    onChange(false);
+                    M && M.updateTextFields();
+                });
             }
 
             function test() {
@@ -194,7 +200,7 @@
                 var ids = id.split('_');
 
                 if (ids.length === 1) {
-                    if (ids[0] === 'pass') value = encrypt('Zgfr56gFe87jJOM', value);
+                    if (ids[0] === 'pass') value = encrypt(secret, value);
                     obj[id] = value;
                 } else if (ids.length === 2) {
                     if (!obj[ids[0]]) obj[ids[0]] = {};
@@ -219,8 +225,8 @@
                         obj = saveHelper(obj, id, $this.val())
                     }
                 });
-                obj.defaultQoS_subscribe = parseInt(obj.defaultQoS_subscribe, 10) || 0;
-                obj.defaultQoS_publish = parseInt(obj.defaultQoS_publish, 10) || 0;
+                obj.defaultQoSsubscribe = parseInt(obj.defaultQoSsubscribe, 10) || 0;
+                obj.defaultQoSpublish = parseInt(obj.defaultQoSpublish, 10) || 0;
                 
                 obj.patterns = table2values('patterns');
                 obj.publish = table2values('publish');
@@ -340,8 +346,8 @@
                             <label class="translate" for="prefix">Prefix for topics:</label>
                         </div>
                         <div class="input-field col s12 m6 l3">
-                            <input id="keepalive_s" type="number" min="0" max="65565" class="value" />
-                            <label for="keepalive_s"><span class="translate">keepalive</span> (<span class="translate">s</span>)</label>
+                            <input id="keepalive" type="number" min="0" max="65565" class="value" />
+                            <label for="keepalive"><span class="translate">keepalive</span> (<span class="translate">s</span>) <span class="translate">0 = disabled, Do not set below 10 seconds.</span></label>
                         </div>
                     </div>
                     <div class="row">
@@ -394,13 +400,13 @@
                             <input id="maxTopicLength" type="text" class="value" size="17" />
                             <label for="maxTopicLength" class="translate">Max topic length (<span class="translate">chars</span>)</label>
                         </div>
-                        <div id="_defaultQoS_subscribe" class="input-field col s12 m6 l3">
-                            <select id="defaultQoS_subscribe" class="value">
+                        <div id="_defaultQoSsubscribe" class="input-field col s12 m6 l3">
+                            <select id="defaultQoSsubscribe" class="value">
                                 <option value="0" class="translate">0 - At most once</option>
                                 <option value="1" class="translate">1 - At least once</option>
                                 <option value="2" class="translate">2 - Exactly once</option>
                             </select>
-                            <label class="translate" for="defaultQoS_subscribe">QoS (Quality of Service):</label>
+                            <label class="translate" for="defaultQoSsubscribe">QoS (Quality of Service):</label>
                         </div>
                    </div>
 					<div id="patterns">
@@ -454,13 +460,13 @@
                             <input id="publishAllOnStart" type="checkbox" class="value filled-in" />
                             <span class="translate" for="publishAllOnStart">Publish all states at start:</span>
                         </div>
-                        <div id="_defaultQoS_publish" class="input-field col s12 m6 l3">
-                                <select id="defaultQoS_publish" class="value">
+                        <div id="_defaultQoSpublish" class="input-field col s12 m6 l3">
+                                <select id="defaultQoSpublish" class="value">
                                 <option value="0" class="translate">0 - At most once</option>
                                 <option value="1" class="translate">1 - At least once</option>
                                 <option value="2" class="translate">2 - Exactly once</option>
                             </select>
-                            <label class="translate" for="defaultQoS_publish">QoS (Quality of Service):</label>
+                            <label class="translate" for="defaultQoSpublish">QoS (Quality of Service):</label>
                         </div>
                         <div class="input-field col s12 m6 l3">
                             <input id="retain" type="checkbox" class="value filled-in" />

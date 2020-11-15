@@ -11,6 +11,8 @@
 
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const adapterName = require('./package.json').name.split('.').pop();
+const parseBool   = require('./lib/common').parseBool;
+
 let adapter;
 
 let client = null;
@@ -36,18 +38,28 @@ function startAdapter(options) {
         if (obj) processMessage(obj);
     });
 
-    adapter.on('ready', () => {
-        adapter.config.pass = decrypt('Zgfr56gFe87jJOM', adapter.config.pass);
-        adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
 
-        // Start
-        main();
+    adapter.on('ready', () => {
+        adapter.getForeignObject("system.config", (err, obj) => {
+            if (obj && obj.native && obj.native.secret) {
+                //noinspection JSUnresolvedVariable
+                adapter.config.pass = decrypt(obj.native.secret, adapter.config.pass);
+            } else {
+                //noinspection JSUnresolvedVariable
+                adapter.config.pass = decrypt("Zgfl56gFe87jJOM", adapter.config.pass);
+            }
+            //!D!adapter.log.debug('main.adapter.on.readym password: ' +JSON.stringify(adapter.config.pass));
+
+            // Start
+            main();
+        });
     });
 
+    
     adapter.on('unload', () => {
         adapter.log.debug('main.on BeforeUnloadEvent, destroy ...');
 
-        client && client.destroy();
+        if (client) client.destroy();
     });
 
     // is called if a subscribed local state changes
@@ -91,7 +103,7 @@ function startAdapter(options) {
                 // immer senden - da muss es ja vorher eine Änderung am State gegeben haben, 
 
                 // if CLIENT
-                client && client.onStateChange(id, state);
+                if (client) client.onStateChange(id, state);
             } else {
                 adapter.log.debug('main.adapter.on.stateChange, no change detcted (no action required) "' + id + '": ' + JSON.stringify(state));
             }
@@ -151,7 +163,7 @@ function processMessage(obj) {
                 _client.on('error', (err) => {
                     _client.end();
                     clearTimeout(timeout);
-                    adapter.log.warn('Error on mqtt test: ' + err)
+                    adapter.log.warn('Error on mqtt test: ' + err);
                     adapter.sendTo(obj.from, obj.command, 'error', obj.callback);
                 });
             }
@@ -161,12 +173,12 @@ function processMessage(obj) {
 
 
 let cnt = 0;
-function readStatesForPattern(item) {
+function readStatesForPattern(item, cb) {
     // {"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false}
     
     adapter.log.debug('main.readStatesForPattern "' + item.mask + '" ...');
-    let qos = (item.QoS && (parseInt(item.QoS) >= 0  && parseInt(item.QoS) <=2) ? parseInt(item.QoS) : adapter.config.defaultQoS_publish);
-    let retain = (item.retain ? parseBool(item.retain) : (item.retain && parseBool(item.retain) == false ? false : adapter.config.retain));
+    let qos = (item.QoS && (parseInt(item.QoS) >= 0  && parseInt(item.QoS) <=2) ? parseInt(item.QoS) : parseInt(adapter.config.defaultQoSpublish));
+    let retain = (item.retain ? parseBool(item.retain) : (item.retain && parseBool(item.retain) == false ? false : parseBool(adapter.config.retain)));
 
 
     adapter.getForeignStates(item.mask, (err, res) => {
@@ -174,6 +186,8 @@ function readStatesForPattern(item) {
 
         if (err) {
             adapter.log.error('main.readStatesForPattern, error: ' + JSON.stringify(err));
+
+            if (cb) cb('erro pm process mask');
 
             return;
         }
@@ -191,19 +205,30 @@ function readStatesForPattern(item) {
         }
 
         // If all patters answered, start client
-        if (!--cnt) {
+/*        if (!--cnt) {
             adapter.log.debug('main.readStatesForPattern, states: ' + JSON.stringify(states));
 
             adapter.log.debug('main.readStatesForPattern >> starting client ...');
 
             client = new require('./lib/client')(adapter, states);
-        }
+        } */
+
+        if (cb) cb('process mask finished');
     });
 } // readStatesForPattern()
 
 
 function main() {
-    adapter.config.keepalive_s = parseInt(adapter.config.keepalive_s, 10) || 10;
+    // check parameter plausibility
+    if (adapter.config.CheckNamespaceDeepInObjecttreeTo < 2) adapter.config.CheckNamespaceDeepInObjecttreeTo = 2;
+    if (adapter.config.ioBrokerMessageFormatCompressFromLength < 100) adapter.config.ioBrokerMessageFormatCompressFromLength = 100;
+    
+    adapter.config.defaultQoSsubscribe = parseInt(adapter.config.defaultQoSsubscribe, 10) || 0;
+    adapter.config.defaultQoSpublish = parseInt(adapter.config.defaultQoSpublish, 10) || 0;
+    adapter.config.retain = adapter.config.retain === 'true' || adapter.config.retain === true;
+    adapter.config.persistent = adapter.config.persistent === 'true' || adapter.config.persistent === true;
+
+    adapter.config.keepalive = parseInt(adapter.config.keepalive, 10) || 10;
     adapter.config.reconnectPeriod = parseInt(adapter.config.reconnectPeriod, 10) || 1000;
     adapter.config.connectTimeout = parseInt(adapter.config.connectTimeout, 10) || 30;
     adapter.config.maxTopicLength = parseInt(adapter.config.maxTopicLength, 10) || 150;
@@ -215,29 +240,22 @@ function main() {
     adapter.config.ioBrokerMessageFormatIgnoreOwnMsg = adapter.config.ioBrokerMessageFormatIgnoreOwnMsg === 'true' || adapter.config.ioBrokerMessageFormatIgnoreOwnMsg === true;
     adapter.config.ioBrokerMessageFormatIgnoreOther = adapter.config.ioBrokerMessageFormatIgnoreOther === 'true' || adapter.config.ioBrokerMessageFormatIgnoreOther === true;
 
-    adapter.log.debug('adapter.config.keepalive_s: ' + adapter.config.keepalive_s);
-    adapter.log.debug('adapter.config.reconnectPeriod: ' + adapter.config.reconnectPeriod);
-    adapter.log.debug('adapter.config.connectTimeout: ' + adapter.config.connectTimeout);
-    adapter.log.debug('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);
-    adapter.log.debug('adapter.config.sendAckToo: ' + adapter.config.sendAckToo);
-    adapter.log.debug('adapter.config.publish: ' + JSON.stringify(adapter.config.publish));
-    adapter.log.debug('adapter.config.patterns: ' + JSON.stringify(adapter.config.patterns));
-    
-    adapter.log.debug('adapter.config.maxTopicLength: ' + adapter.config.maxTopicLength);
-    adapter.log.debug('adapter.config.ioBrokerMessageFormatActive: ' + adapter.config.ioBrokerMessageFormatActive);
-    adapter.log.debug('adapter.config.ioBrokerMessageFormatIgnoreOwnMsg: ' + adapter.config.ioBrokerMessageFormatIgnoreOwnMsg);
-    adapter.log.debug('adapter.config.ioBrokerMessageFormatIgnoreOther: ' + adapter.config.ioBrokerMessageFormatIgnoreOther);
-    adapter.log.debug('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo); + ' (default = 2)';
-    adapter.log.debug('adapter.config.ioBrokerMessageFormatCompressFromLength: ' + adapter.config.ioBrokerMessageFormatCompressFromLength) + ' (default = 100)';
+    if (adapter.config.debug) {
+        adapter.log.info('adapter.config.keepalive: ' + adapter.config.keepalive);
+        adapter.log.info('adapter.config.reconnectPeriod: ' + adapter.config.reconnectPeriod);
+        adapter.log.info('adapter.config.connectTimeout: ' + adapter.config.connectTimeout);
+        adapter.log.info('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);
+        adapter.log.info('adapter.config.sendAckToo: ' + adapter.config.sendAckToo);
+        adapter.log.info('adapter.config.publish: ' + JSON.stringify(adapter.config.publish));
+        adapter.log.info('adapter.config.patterns: ' + JSON.stringify(adapter.config.patterns));
 
-    // check parameter plausibility
-    if (adapter.config.CheckNamespaceDeepInObjecttreeTo < 2) adapter.config.CheckNamespaceDeepInObjecttreeTo = 2;
-    if (adapter.config.ioBrokerMessageFormatCompressFromLength < 100) adapter.config.ioBrokerMessageFormatCompressFromLength = 100;
-    
-    adapter.config.defaultQoS_subscribe = parseInt(adapter.config.defaultQoS_subscribe, 10) || 0;
-    adapter.config.defaultQoS_publish = parseInt(adapter.config.defaultQoS_publish, 10) || 0;
-    adapter.config.retain = adapter.config.retain === 'true' || adapter.config.retain === true;
-    adapter.config.persistent = adapter.config.persistent === 'true' || adapter.config.persistent === true;
+        adapter.log.info('adapter.config.maxTopicLength: ' + adapter.config.maxTopicLength);
+        adapter.log.info('adapter.config.ioBrokerMessageFormatActive: ' + adapter.config.ioBrokerMessageFormatActive);
+        adapter.log.info('adapter.config.ioBrokerMessageFormatIgnoreOwnMsg: ' + adapter.config.ioBrokerMessageFormatIgnoreOwnMsg);
+        adapter.log.info('adapter.config.ioBrokerMessageFormatIgnoreOther: ' + adapter.config.ioBrokerMessageFormatIgnoreOther);
+        adapter.log.info('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo + ' (default = 2)');
+        adapter.log.info('adapter.config.ioBrokerMessageFormatCompressFromLength: ' + adapter.config.ioBrokerMessageFormatCompressFromLength + ' (default = 100)');
+    }
 
     if (adapter.config.clientId === '') {
         adapter.log.error('No ClientID configured, please check konfiguration!');
@@ -248,32 +266,42 @@ function main() {
 
     // Subscribe on own variables to publish it
     if (adapter.config.publish && adapter.config.publish != '') {
+        adapter.log.debug('main.publish precheck started ...');
+
         // [{"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false},{"mask":"logparser.0.*","QoS":"1","retain":false,"enabled":true}]
 
         adapter.config.publish.forEach((item) => {
-            if ((item) && item.enabled && item.mask && item.mas != '') {
-                adapter.log.info('main.publish, topic: "' + item.mask.trim() + '"; QoS: "' + item.QoS + '"; enabled: "' + item.enabled + '"');
+            if ((item) && item.enabled && item.mask && item.mask != '') {
+                adapter.log.info('main.publish precheck, mask: "' + item.mask.trim() + '"; QoS: "' + item.QoS + '"; enabled: "' + item.enabled + '"');
+                // mask: "javascript.1.scriptEnabled.common.*"; QoS: ""; enabled: "true"
 
                 try {
                     if (item.mask.indexOf('#') !== -1) {
-                        adapter.log.warn('main.publish, sed MQTT notation for ioBroker id mask "' + item.mask + '": use "' + item.mask.replace(/#/g, '*') + ' notation');
+                        adapter.log.warn('main.publish precheck, sed MQTT notation for ioBroker id mask "' + item.mask + '": use "' + item.mask.replace(/#/g, '*') + ' notation');
                         item.mask = item.mask.replace(/#/g, '*');
                     }
 
-                    adapter.subscribeForeignStates(item.mask.trim());
-                    cnt++;
-                    readStatesForPattern(item);
+                    adapter.subscribeForeignStates(item.mask.trim(), (error) => {
+                        if (error) {
+                            adapter.log.error('main.publish precheck, error on subscribeForeignStates "' + item.mask.trim() + '" (' + JSON.stringify(error) + ')');
+                        } else {
+                            cnt++;
+
+                            readStatesForPattern(item);
+                        }
+                    });
                 } catch (err) {
-                    adapter.log.error('main.publish, error on publish ' + JSON.stringify(item));
+                    adapter.log.error('main.publish precheck, error on publish ' + JSON.stringify(item) + '; err: ' + JSON.stringify(err));
+                    // {"mask":"javascript.1.scriptEnabled.common.*","QoS":"","retain":true,"enabled":true}
                 }
             }
         });
+
+        adapter.log.debug('main.publish precheck finished');
     } else {
         adapter.log.info('main, no pattern for subscriptions configured!');
-    }
 
-    // If no subscription, start client
-    if (!cnt) {
+        // If no subscription, start client
         adapter.log.debug('main >> starting client ...');
 
         client = new require(__dirname + '/lib/client')(adapter, states);

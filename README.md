@@ -38,7 +38,7 @@ This adapter works only as client for an broker.
 ### MQTT generell settings
 - **clientId** - uniq client id for identification on the broker  !!! bad english
 - **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g if prefix "iobroker/" all states will have names like "**iobroker**/iobmqtt/0/
-- **keepalive** - This value is a time interval, measured in seconds, during which the broker expects a client to send a message, such as a PUBLISH message. If no message is sent from the client to the broker during the interval, the broker automatically closes the connection. Note that the keep-alive value you specify is multiplied by 1.5, so setting a 10-minute keep-alive actually results in a 15 minute interval.
+- **keepalive** - This value is a time interval, measured in seconds, during which the broker expects a client to send a message, such as a PUBLISH message. If no message is sent from the client to the broker during the interval, the broker automatically closes the connection. Note that the keep-alive value you specify is multiplied by 1.5, so setting a 10-minute keep-alive actually results in a 15 minute interval. The maximum value allowable, and default value, is 65535. Do not set below 10 seconds.
 
 - **Persistent Session** - When checked, the broker and the Client (QoS 1/2???) saves the session information of the client. This means it tracks which messages have been send / received by the client (only QoS Level 1 and 2) and to which topics this client has subscribed. This information survives a disconnect and reconnect of the adapter. (not tested)
 
