@@ -205,13 +205,13 @@ function readStatesForPattern(item, cb) {
         }
 
         // If all patters answered, start client
-/*        if (!--cnt) {
+        if (!--cnt) {
             adapter.log.debug('main.readStatesForPattern, states: ' + JSON.stringify(states));
 
             adapter.log.debug('main.readStatesForPattern >> starting client ...');
 
             client = new require('./lib/client')(adapter, states);
-        } */
+        }
 
         if (cb) cb('process mask finished');
     });
@@ -265,7 +265,7 @@ function main() {
 
 
     // Subscribe on own variables to publish it
-    if (adapter.config.publish && adapter.config.publish != '') {
+    if (adapter.config.publish && adapter.config.publish != '' && adapter.config.publish.length > 0 &&  adapter.config.publish[0] != '' &&  adapter.config.publish[0].mask != '') {
         adapter.log.debug('main.publish precheck started ...');
 
         // [{"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false},{"mask":"logparser.0.*","QoS":"1","retain":false,"enabled":true}]
