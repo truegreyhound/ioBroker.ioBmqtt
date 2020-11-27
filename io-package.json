@@ -1,161 +1,11 @@
 {
   "common": {
     "name": "iobmqtt",
-    "version": "2.2.1",
+    "version": "0.2.2",
     "news": {
-      "2.1.9": {
-        "en": "Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "fr": "Cas de crash évités (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-        "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-E，IOBROKER-MQTT-F）"
-      },
-      "2.1.8": {
-        "en": "Crash case prevented on unsubscribe (Sentry IOBROKER-MQTT-D)",
-        "de": "Absturz beim Abbestellen verhindert (Sentry IOBROKER-MQTT-D)",
-        "ru": "При отказе от подписки предотвращен сбой (Sentry IOBROKER-MQTT-D)",
-        "pt": "Caso de falha impedido ao cancelar (Sentry IOBROKER-MQTT-D)",
-        "nl": "Crashcasus verhinderd bij uitschrijving (Sentry IOBROKER-MQTT-D)",
-        "fr": "Cas de crash empêché lors de la désinscription (Sentry IOBROKER-MQTT-D)",
-        "it": "Crash case impedito all'annullamento dell'iscrizione (Sentry IOBROKER-MQTT-D)",
-        "es": "Caso de choque evitado al cancelar la suscripción (Sentry IOBROKER-MQTT-D)",
-        "pl": "Awaria zapobiegająca anulowaniu subskrypcji (Sentry IOBROKER-MQTT-D)",
-        "zh-cn": "取消预订时避免发生崩溃情况（Sentry IOBROKER-MQTT-D）"
-      },
-      "2.1.7": {
-        "en": "handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)",
-        "de": "Behandeln Sie ungültige mqtt-Servereinstellungen besser (Sentry IOBROKER-MQTT-9).",
-        "ru": "лучше обрабатывать неверные настройки сервера mqtt (Sentry IOBROKER-MQTT-9)",
-        "pt": "lidar melhor com configurações inválidas do servidor mqtt (Sentry IOBROKER-MQTT-9)",
-        "nl": "omgaan met ongeldige mqtt-serverinstellingen beter (Sentry IOBROKER-MQTT-9)",
-        "fr": "gérer mieux les paramètres de serveur mqtt invalides (Sentry IOBROKER-MQTT-9)",
-        "it": "gestire meglio le impostazioni del server mqtt non valide (Sentry IOBROKER-MQTT-9)",
-        "es": "manejar mejor la configuración inválida del servidor mqtt (Sentry IOBROKER-MQTT-9)",
-        "pl": "lepiej radzić sobie z nieprawidłowymi ustawieniami serwera mqtt (Sentry IOBROKER-MQTT-9)",
-        "zh-cn": "更好地处理无效的mqtt服务器设置（Sentry IOBROKER-MQTT-9）"
-      },
-      "2.1.6": {
-        "en": "Try to prevent creation of objects with invalid IDs\ncheck that state is set before accessing it (Sentry IOBROKER-MQTT-2)\nBetter handle disconnection cases (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "de": "Versuchen Sie, die Erstellung von Objekten mit ungültigen IDs zu verhindern\nÜberprüfen Sie, ob der Status festgelegt ist, bevor Sie darauf zugreifen (Sentry IOBROKER-MQTT-2).\nTrennungsfälle besser behandeln (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "ru": "Попробуйте предотвратить создание объектов с недействительными идентификаторами\nпроверьте, что состояние установлено перед доступом к нему (Sentry IOBROKER-MQTT-2)\nЛучшие случаи отключения ручки (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "pt": "Tente impedir a criação de objetos com IDs inválidos\nverifique se o estado está definido antes de acessá-lo (Sentry IOBROKER-MQTT-2)\nMelhor lidar com casos de desconexão (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "nl": "Probeer te voorkomen dat objecten met ongeldige ID's worden gemaakt\ncontroleer of de status is ingesteld voordat u deze opent (Sentry IOBROKER-MQTT-2)\nOntkoppelingsgevallen beter afhandelen (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "fr": "Essayez d'empêcher la création d'objets avec des ID invalides\nvérifier que l'état est défini avant d'y accéder (Sentry IOBROKER-MQTT-2)\nMieux gérer les cas de déconnexion (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "it": "Cerca di impedire la creazione di oggetti con ID non validi\nverificare che lo stato sia impostato prima di accedervi (Sentry IOBROKER-MQTT-2)\nGestire meglio i casi di disconnessione (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "es": "Intenta evitar la creación de objetos con ID no válidos\ncompruebe que el estado esté establecido antes de acceder a él (Sentry IOBROKER-MQTT-2)\nManejar mejor los casos de desconexión (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "pl": "Spróbuj zapobiec tworzeniu obiektów z nieprawidłowymi identyfikatorami\nsprawdź, czy stan jest ustawiony przed uzyskaniem do niego dostępu (Sentry IOBROKER-MQTT-2)\nLepsze przypadki rozłączania uchwytów (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-        "zh-cn": "尝试防止创建具有无效ID的对象\n在访问之前检查状态是否已设置（Sentry IOBROKER-MQTT-2）\n更好地处理断开情况（哨兵IOBROKER-MQTT-3，IOBROKER-MQTT-6）"
-      },
-      "2.1.5": {
-        "en": "try to prevent crashes on not existing state values\nSentry added for crash reporting with js-controller 3.x+",
-        "de": "Versuchen Sie, Abstürze bei nicht vorhandenen Statuswerten zu verhindern\nSentry für Crash-Reporting mit js-controller 3.x + hinzugefügt",
-        "ru": "попытаться предотвратить сбои на несуществующих значениях состояния\nДобавлен Sentry для отчетов о сбоях с помощью js-controller 3.x +",
-        "pt": "tente evitar falhas em valores de estado inexistentes\nAdicionado sentinela para relatórios de falhas com o js-controller 3.x +",
-        "nl": "probeer crashes op niet bestaande statuswaarden te voorkomen\nSentry toegevoegd voor crashrapportage met js-controller 3.x +",
-        "fr": "essayez d'éviter les plantages sur des valeurs d'état non existantes\nSentry ajouté pour les rapports de plantage avec js-controller 3.x +",
-        "it": "provare a prevenire arresti anomali su valori di stato non esistenti\nSentry aggiunto per la segnalazione di crash con js-controller 3.x +",
-        "es": "intenta evitar bloqueos en valores de estado no existentes\nSentry agregado para informes de fallas con js-controller 3.x +",
-        "pl": "spróbuj zapobiec awariom na nieistniejących wartościach stanu\nDodano Sentry do raportowania awarii z js-controller 3.x +",
-        "zh-cn": "尝试防止不存在的状态值崩溃\nSentry已添加，用于使用js-controller 3.x +进行崩溃报告"
-      },
-      "2.1.4": {
-        "en": "websocket do not have setTimeout method\nprevent messageID overflow",
-        "de": "Websocket hat keine setTimeout-Methode\nÜberlaufen von messageID verhindern",
-        "ru": "у websocket нет метода setTimeout\nпредотвратить переполнение messageID",
-        "pt": "websocket não possui o método setTimeout\nimpedir o estouro de messageID",
-        "nl": "websocket heeft geen setTimeout-methode\noverflow van messageID voorkomen",
-        "fr": "websocket n'a pas de méthode setTimeout\néviter le débordement de messageID",
-        "it": "websocket non ha il metodo setTimeout\nimpedire l'overflow di messageID",
-        "es": "websocket no tiene el método setTimeout\nevitar el desbordamiento de ID de mensaje",
-        "pl": "websocket nie ma metody setTimeout\nzapobiec przepełnieniu identyfikatora wiadomości",
-        "zh-cn": "websocket没有setTimeout方法\n防止messageID溢出"
-      },
-      "2.1.3": {
-        "en": "Caught some errors",
-        "de": "Einige Fehler gefangen",
-        "ru": "Поймал некоторые ошибки",
-        "pt": "Detectou alguns erros",
-        "nl": "Er zijn fouten opgetreden",
-        "fr": "Pris quelques erreurs",
-        "it": "Preso alcuni errori",
-        "es": "Atrapado algunos errores",
-        "pl": "Złapałem kilka błędów",
-        "zh-cn": "抓到一些错误"
-      },
-      "2.1.2": {
-        "en": "removed usage of getMessage, add send state as object",
-        "de": "Verwendung von getMessage entfernt, Sendestatus als Objekt hinzufügen",
-        "ru": "удалено использование getMessage, добавлено состояние отправки в качестве объекта",
-        "pt": "removido o uso de getMessage, adicione o estado de envio como objeto",
-        "nl": "verwijderd gebruik van getMessage, voeg verzendstatus toe als object",
-        "fr": "suppression de l'utilisation de getMessage, ajout d'un état d'envoi en tant qu'objet",
-        "it": "rimosso l'utilizzo di getMessage, aggiungi lo stato di invio come oggetto",
-        "es": "uso eliminado de getMessage, agregar estado de envío como objeto",
-        "pl": "usunięto użycie getMessage, dodaj stan wysyłania jako obiekt",
-        "zh-cn": "删除了getMessage的用法，将发送状态添加为对象"
-      },
-      "2.1.1": {
-        "en": "Added option to overwrite the client \"clean session\" settings",
-        "de": "Option zum Überschreiben der Einstellungen für \"saubere Sitzung\" des Clients hinzugefügt",
-        "ru": "Добавлена опция перезаписи настроек клиента \"чистый сеанс\"",
-        "pt": "Opção adicionada para sobrescrever as configurações de \"sessão limpa\" do cliente",
-        "nl": "Optie toegevoegd om de \"schone sessie\" -instellingen van de client te overschrijven",
-        "fr": "Ajout d'une option pour écraser les paramètres du client \"session propre\"",
-        "it": "Aggiunta opzione per sovrascrivere le impostazioni della \"sessione pulita\" del client",
-        "es": "Opción agregada para sobrescribir la configuración de \"sesión limpia\" del cliente",
-        "pl": "Dodano opcję nadpisania ustawień „czystej sesji” klienta",
-        "zh-cn": "添加了覆盖客户端“干净会话”设置的选项"
-      },
-      "2.1.0": {
-        "en": "Add option to send message using messagebox\nFix error with logging on pubrec",
-        "de": "Option zum Senden von Nachrichten mithilfe von Messagebox hinzufügen\nFehler bei der pubrec-logging behoben",
-        "ru": "Добавить опцию для отправки сообщения с помощью messagebox\nИсправлена ​​ошибка при входе в pubrec",
-        "pt": "Adicionar opção para enviar mensagem usando messagebox\nCorrigir erro com o registro em pubrec",
-        "nl": "Optie toevoegen om een ​​bericht te verzenden via messagebox\nFout bij herstellen met inloggen op pubrec",
-        "fr": "Ajouter une option pour envoyer un message en utilisant la messagebox\nCorrection d'une erreur lors de la connexion à pubrec",
-        "it": "Aggiungi l'opzione per inviare un messaggio usando messagebox\nRisolto un problema con l'accesso a pubrec",
-        "es": "Añadir opción para enviar mensaje usando el messagebox\nSolucionar error al iniciar sesión en pubrec.",
-        "pl": "Dodaj opcję wysyłania wiadomości przy użyciu skrzynki wiadomości\nNapraw błąd podczas logowania do pubrec",
-        "zh-cn": "添加使用消息框发送消息的选项\n登录pubrec修复错误"
-      },
-      "2.0.6": {
-        "en": "Add Chinese support",
-        "de": "Chinesische Unterstützung hinzufügen",
-        "ru": "Добавить поддержку китайцев",
-        "pt": "Adicionar suporte chinês",
-        "nl": "Voeg Chinese ondersteuning toe",
-        "fr": "Ajouter un support chinois",
-        "it": "Aggiungi supporto cinese",
-        "es": "Añadir soporte chino",
-        "pl": "Dodaj chińskie wsparcie",
-        "zh-cn": "添加中文支持"
-      },
-      "2.0.5": {
-        "en": "Support for Compact mode",
-        "de": "Unterstützung für den Kompaktmodus",
-        "ru": "Поддержка компактного режима",
-        "pt": "Suporte para o modo compacto",
-        "nl": "Ondersteuning voor de Compact-modus",
-        "fr": "Prise en charge du mode compact",
-        "it": "Supporto per la modalità compatta",
-        "es": "Soporte para el modo compacto",
-        "pl": "Obsługa trybu Compact"
-      },
-      "2.0.4": {
-        "en": "Subscribe to topics after connect",
-        "de": "Themen nach dem Verbinden abonnieren",
-        "ru": "Подписаться на темы после подключения",
-        "pt": "Inscrever-se para tópicos após conectar",
-        "nl": "Abonneer u op onderwerpen na verbinding maken",
-        "fr": "S'abonner aux sujets après la connexion",
-        "it": "Iscriviti agli argomenti dopo la connessione",
-        "es": "Suscribirse a temas después de conectarse",
-        "pl": "Subskrybuj tematy po nawiązaniu połączenia"
+      "0.2.2": {
+        "en": "first working version",
+        "de": "erste arbeitende Version"
       }
     },
     "title": "MQTT Client for ioBroker message format",
@@ -185,8 +35,7 @@
       "greyhound <truegreyhound@gmx.net>"
     ],
     "docs": {
-      "en": "docs/en/iobmqtt.md",
-      "ru": "docs/ru/iobmqtt.md"
+      "en": "docs/en/iobmqtt.md"
     },
     "license": "MIT",
     "platform": "Javascript/Node.js",
@@ -214,7 +63,7 @@
     "dependencies": {
       "js-controller": ">=2.2.0"
     },
-    "installedFrom": "iobmqtt.mqtt@2.2.1"
+    "installedFrom": "iobmqtt.mqtt@0.2.2"
   },
   "native": {
     "type": "client",
@@ -233,7 +82,7 @@
     "certPrivate": "",
     "certChained": "",
     "prefix": "",
-    "sendAckToo": false,
+    "sendAckOnly": false,
     "sendStateObject": false,
     "webSocket": false,
     "maxTopicLength": 150,

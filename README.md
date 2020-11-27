@@ -29,10 +29,8 @@ This adapter works only as client for an broker.
 ### connection settings
 - **URL** - name or ip address of the broker/server. Like "localhost".
 - **Port** - Port of the MQTT broker. By default 1883
-- **Secure** - If secure (SSL) connection must be used.
 - **User** - if broker required authentication, define here the user name.
 - **Password** - if user name is not empty the password must be set. It can be empty.
-- **Password confirmation** - repeat here the password.
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
 
 ### MQTT generell settings
@@ -42,12 +40,7 @@ This adapter works only as client for an broker.
 
 - **Persistent Session** - When checked, the broker and the Client (QoS 1/2???) saves the session information of the client. This means it tracks which messages have been send / received by the client (only QoS Level 1 and 2) and to which topics this client has subscribed. This information survives a disconnect and reconnect of the adapter. (not tested)
 
-- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true).
---> überarbeiten, mache ich anders! und im code verifizieren
-
-- **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: ```{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}```); if not the values ```states.val``` is sent as a single value (example state.val as single value: ```true```)
 - **Trace output for every message** - Debug outputs.
-- **use ioBroker MQTT message format** - When checked, the published mesage (value or state object) is wraped up in an JSON object which I named "ioBroker MQTT message format", see the description below.
 - **ignore own messages** - States that have been sent (published as message) and subscribed as a topic at the same time are not processed
 - **ignore non ioBroker messages** - only messages in "ioBroker MQTT message format" format are processed
 - **compress from lenghth** - if the length of the original message is longer, it is compressed
@@ -64,21 +57,26 @@ This adapter works only as client for an broker.
 - **QoS (Quality of Service)** - possible values 0, 1 or 2, see the documentation to MQTT, not tested yet
 - **retain flag** - The broker stores the last retained message and the corresponding QoS for that topic. Each client that subscribes to a topic pattern that matches the topic of the retained message receives the retained message immediately after they subscribe. The broker stores only one retained message per topic. Retained messages help newly-subscribed clients get a status update immediately after they subscribe to a topic. The retained message eliminates the wait for the publishing clients to send the next update.
 - **Mask to publish own states** - List of mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of "yr" and "hm-rpc" adapter. Regardless of this, a state or a value are only sent if the value, ack or ts have changed. A QoS and the retain flag that differs from the default can be set for each mask. Only enabled masks are published.
-
-- **Send states (ack=true) too** - !!!???? == TRUE wird wohl auch nur states senden, wo ack == TRUE,   Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
+- **Send states with ack=true only** - Normally all states independent from the ack state will be sent to the broker. If this flag is set, only states with ack=true will be sent. 
 
 ## ioBroker MQTT message format
 
-<topic> {'clientID': <ID>, 'ts': <timestamp>, 'version': <version>, 'receiver': <receiver>[, 'coding': <coding>[, 'coding-src': <coding-src>],'messsage': <Message>}
+<topic> {'clientID': <clientID>, 'ts': <timestamp>, 'version': <version>, 'receiver': <receiver>[, 'type': <type>, 'coding': <coding>[, 'coding-src': <coding-src>],'messsage': <Message>}
+
 topic: <normaler topic>|'ioBroker/mqtt-command'
-version: <m.n> - m == major, n == minor - version of the ioBroker MQTT message format
-	If a client receives a message with a larger major, this leads to an error message and after 3 messages to deactivation
-  Warnings for a larger minor (max 3 per day)
-receiver: * - everyone, \[<clientID1>[,<clientID2>]\]
-coding: |base64|zip		- In the object of a data point, a specification can be made in native.mqtt_coding. This can be particularly useful with JSON objects
-coding-src: |object|size, == '' | object - native.mqtt_coding, size - message.lenght > definition
-If topic == 'ioBroker/mqtt-command', then there is a control instruction in <message>: {'command': <command>}
-command: publishStop|publishStart - These messages are sent when "Publish all states at start" is active. The other clients suppress the publication of topics during this time if there is a subscription for this topic.
+		== ioBroker/mqtt-command, dann steht in <message> eine Steueranweisung: {'command': <command>}
+				command: publishStop|publishStart
+clientID	- clientID der Adapterinstanz
+timestamp	- Zeitpunkt der Erstellung/Sendung der Nachricht
+version: <m.n> - m == major, n == minor
+		Wenn ein Client eine Nachricht mit größerem Major bekommt, führt das zu Fehlermeldung und nach 3 Nachrichten zur Deaktivierung
+		bei größerem Minor zu warnings (max 3 je Tag)
+receiver: * - everyone, [<clientID>]  (derzeit nicht konfigurierbar)
+type: value from common.type from ioBroker state object
+coding: |base64|zip
+		Im Objekt des Datenpunktes kann in native.mqtt_coding (= base64) eine Vorgabe gemacht werden, das ist insbesondere für JSON-Objekte gedacht
+coding-src: |object|size, '' - keine Quelle | object - native.mqtt_coding, size - message.lenght > definition
+message		- die Originalmessage
 
 
 ## Install
@@ -87,28 +85,6 @@ command: publishStop|publishStart - These messages are sent when "Publish all st
 
 ## Usage
 
-### How to test iobmqtt client:
-- Set type to "Client".
-- Leave port on 1883.
-- Set URL as "broker.mqttdashboard.com"
-- To get absolutely all topics(messages) set pattern to "#".
-- To receive all topics for "/4MS" set pattern to "/4MS/#"
-- To receive all topics for "/MS and "/floorish" set pattern to "/4MS/#, /floorish/#"
-
-### Sending messages
-You may send / publish messages on topics using ```sendTo``` method from your adapter via MQTT adapter, e.g.:
-
-```javascript
-/*
- * @param {string}  MQTT instance     Specify MQTT instance to send message through (may be either server or client)
- * @param {string}  action            Action to use (always 'sendMessage2Client' for sending plain messages)
- * @param {object}  payload         
- * @param {string}  payload.topic     Topic to publish message on
- * @param {string}  payload.message   Message to be published on specified topic
- *
- */
-adapter.sendTo('iobmqtt.0', 'sendMessage2Client', {topic: '/your/topic/here', message: 'your message'});
-```
 
 ### Examples of using wildcards
 The following examples on the use of wildcards, builds on the example provided in topic strings.
@@ -150,10 +126,10 @@ The broker was tested with following broker:
 
 ## Changelog
 
-### 2.xxx (2020-11-01)
-* (greyhound) first published version with the  ioBroker MQTT message format
+### 0.2.2 (2020-11-27)
+* (greyhound) first working version with the  ioBroker MQTT message format
 
-### 2.1.10 (2020-11-01)
+### 0.2.1 (2020-11-01)
 * (greyhound) clone the mqtt-adapter to iobmqtt and rewrite the client
 
 ### 2.1.9 (2020-09-17)

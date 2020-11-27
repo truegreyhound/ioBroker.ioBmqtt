@@ -35,31 +35,34 @@
             function showHideSettings() {
                 $('#_clientId').show();
                 $('#_url').show();
+                $('#_ssl').hide();       // !P!
                 $('#test').show();
 
                 $('#_certPublic').hide();
                 $('#_certPrivate').hide();
                 $('#_certChained').hide();
-                $('#_webSocket').hide();        // hide ??
+                $('#_webSocket').hide();        // hide ?? !P!
                 $('#_persistent').show();
 
-//                $('#_patterns').show();
- 
-                if ($('#ssl').prop('checked')) {
+/*!P!                if ($('#ssl').prop('checked')) {
                     $('#_certPublic').show();
                     $('#_certPrivate').show();
                     $('#_certChained').show();
-                } else {
+                } else { */
                     $('#_certPublic').hide();
                     $('#_certPrivate').hide();
                     $('#_certChained').hide();
-                }
+//!P                }
+
+                $('#_extraSet').hide();
+                $('#_sendStateObject').hide();
+                $('#_ioBrokerMessageFormatActive').hide();
+                $('#_ioBrokerMessageFormatIgnoreOther').hide();
             }
 
             function init() {
                 showHideSettings();
-                $('#type').on('change', showHideSettings);
-                $('#ssl').on('change', showHideSettings);
+//!P!                $('#ssl').on('change', showHideSettings);
                 $('#test').on('click', test);
             }
 
@@ -157,7 +160,7 @@
                     publish = settings.publish || [];
                     values2table('publish', publish, onChange);
                     
-                    settings.sendAckToo = settings.sendAckToo || false;
+                    settings.sendAckOnly = settings.sendAckOnly || false;
                     settings.sendStateObject = settings.sendStateObject || false;
                     settings.webSocket  = settings.webSocket || false;
                     settings.defaultQoSsubscribe = (settings.defaultQoSsubscribe === '' || settings.defaultQoSsubscribe === -1 || settings.defaultQoSsubscribe === '-1') ? -1 : settings.defaultQoSsubscribe || 0;
@@ -166,8 +169,6 @@
                     settings.CheckNamespaceDeepInObjecttreeTo = (settings.CheckNamespaceDeepInObjecttreeTo === '' || settings.CheckNamespaceDeepInObjecttreeTo === -1 || settings.CheckNamespaceDeepInObjecttreeTo === '-1') ? -1 : settings.CheckNamespaceDeepInObjecttreeTo || 3;
 
                     loadHelper(settings);
-
-                    $('#pass_confirm').val($('#pass').val());
 
                     init();
                     fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
@@ -235,10 +236,6 @@
             } // getSettings()
 
             function save(callback) {
-                if ($('#pass').val() !== $('#pass_confirm').val()) {
-                    showMessage(_('Password confirmation is not equal with password'));
-                    return;
-                }
 
                 callback(getSettings());
             }
@@ -291,7 +288,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="input-field col s12 m12">
+                        <div class="input-field col s12 m12" id="_ssl">
                             <input id="ssl" type="checkbox" class="value filled-in" />
                             <span class="translate" for="ssl">Secure:</span>
                         </div>
@@ -317,10 +314,6 @@
                         <div class="input-field col s12 m6 l4">
                             <input id="pass" type="password" size="17" class="value" />
                             <label class="translate" for="pass">Password:</label>
-                        </div>
-                        <div class="input-field col s12 m6 l4">
-                            <input id="pass_confirm" type="password" size="17" />
-                            <label class="translate" for="pass_confirm">Password confirmation:</label>
                         </div>
                     </div>
                     <div class="row">
@@ -355,11 +348,11 @@
                             <input id="persistent" type="checkbox" class="value filled-in" />
                             <span class="translate" for="persistent">Set Persistent Session (disabled = clean)</span>
                         </div>
-                        <div class="input-field col s12 m6 l3">
+                        <div class="input-field col s12 m6 l3" id="_extraSet">
                             <input id="extraSet" type="checkbox" class="value filled-in" />
                             <span class="translate" for="extraSet">Use different topic names for set and get:</span>
                         </div>
-                        <div class="input-field col s12 m6 l3">
+                        <div class="input-field col s12 m6 l3" id="_sendStateObject">
                             <input id="sendStateObject" type="checkbox" class="value filled-in" />
                             <span class="translate" for="sendStateObject">Send/receive state object as mqtt message</span>
                         </div>
@@ -370,7 +363,7 @@
                     </div>
                     <h6 class="translate sub-title">ioBroker MQTT message format settings</h6>
                     <div class="row">
-                        <div class="input-field col s12 m6 l3">
+                        <div class="input-field col s12 m6 l3" id="_ioBrokerMessageFormatActive">
                             <input id="ioBrokerMessageFormatActive" type="checkbox" class="value filled-in" />
                             <span class="translate" for="ioBrokerMessageFormatActive">Use ioBroker mqtt message format</span>
                         </div>
@@ -378,7 +371,7 @@
                             <input id="ioBrokerMessageFormatIgnoreOwnMsg" type="checkbox" class="value filled-in" />
                             <span class="translate" for="ioBrokerMessageFormatIgnoreOwnMsg">ignore own messages</span>
                         </div>
-                        <div class="input-field col s12 m6 l3">
+                        <div class="input-field col s12 m6 l3" id="_ioBrokerMessageFormatIgnoreOther">
                             <input id="ioBrokerMessageFormatIgnoreOther" type="checkbox" class="value filled-in" />
                             <span class="translate" for="ioBrokerMessageFormatIgnoreOther">ignore non ioBroker messages</span>
                         </div>
@@ -466,7 +459,7 @@
                                 <option value="1" class="translate">1 - At least once</option>
                                 <option value="2" class="translate">2 - Exactly once</option>
                             </select>
-                            <label class="translate" for="defaultQoSpublish">QoS (Quality of Service):</label>
+                            <label class="translate" for="defaultQoSpublish">Default QoS (Quality of Service):</label>
                         </div>
                         <div class="input-field col s12 m6 l3">
                             <input id="retain" type="checkbox" class="value filled-in" />
@@ -488,7 +481,7 @@
 											<th data-name="_index" style="width: 5%" class="center-align translate"></th>
 											<th data-name="mask" style="width: 60%" class="translate" for="mask">mask</th>
 <!--											<th data-name="QoS"  style="width: 10%" data-type="combobox" class="translate">QoS</th> -->
-											<th data-name="QoS"  style="width: 10%" class="translate">Default QoS</th>
+											<th data-name="QoS"  style="width: 10%" class="translate">QoS</th>
 											<th data-name="retain"  style="width: 10%" data-type="checkbox" class="translate">Retain</th>
 											<th data-name="enabled"  style="width: 10%" data-type="checkbox" class="translate">Enabled</th>
 											<th data-buttons="delete" style="width: 5%"></th>
@@ -500,8 +493,8 @@
 					</div>
                     <h6 class="translate sub-title">ioBroker subscribe settings</h6>
                     <div class="input-field col s12 m6 l3">
-                        <input id="sendAckToo" type="checkbox" class="value filled-in" />
-                        <span class="translate" for="sendAckToo">Send states (ack=true) too:</span>
+                        <input id="sendAckOnly" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="sendAckOnly">Send states only with ack=true</span>
                     </div>
                  </div>
             </div>

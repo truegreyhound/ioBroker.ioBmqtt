@@ -75,19 +75,9 @@ function startAdapter(options) {
             // if CLIENT
             if (client) client.onStateChange(id);
         } else
-        // you can use the ack flag to detect if state is desired or acknowledged (erwünscht oder anerkannt)
-        // sendAckToo == TRUE -> dann wird immer auf geänderten Wert/ack geprüft, d. h. auch Werte mit ack == TRUE werden an Broker gesendet
-        // == FALSE --> dann muss ack des state == FALSE sein um den Wert an den Broker zu senden, ignoriert also (Wert-) Änderungen mit ack == TRUE
-        // --> gibt es Adapter, die ihren Wert gleich mit ack == TRUE setzen??
-        // --> da hätte ich eher erwartet, dass bei sendAckToo == FALSE ack-Änderungen ignoriert werden
-
-   //!O!if ((adapter.config.sendAckToo || !state.ack) && !messageboxRegex.test(id)) {
-            // (adapter.config.sendAckToo == TRUE || state.ack == FALSE) && id != *.messagebox$
-            // adapter.config.sendAckToo --> Wenn TRUE, dann immer auf Änderung prüfen
-            //                           --> Wenn FALSE, dann nur weiter prüfen, wenn state.ack == FALSE
-        if ((!adapter.config.sendAckToo || (adapter.config.sendAckToo && state.ack))  && !messageboxRegex.test(id)) {
-            // adapter.config.sendAckToo == TRUE && stae.ack == TRUE --> anerkannter state von einem Adapter
-            // adapter.config.sendAckToo == FALSE --> ack ist egal, nur Änderung state wichtig
+        if ((!adapter.config.sendAckOnly || (adapter.config.sendAckOnly && state.ack))  && !messageboxRegex.test(id)) {
+            // adapter.config.sendAckOnly == TRUE && stae.ack == TRUE --> anerkannter state von einem Adapter
+            // adapter.config.sendAckOnly == FALSE --> ack ist egal, nur Änderung state wichtig
 
             // get "old" values from cache
             const oldVal = states[id] ? states[id].state.val : null;
@@ -108,7 +98,7 @@ function startAdapter(options) {
                 adapter.log.debug('main.adapter.on.stateChange, no change detcted (no action required) "' + id + '": ' + JSON.stringify(state));
             }
         } else {
-            adapter.log.debug('main.adapter.on.stateChange, sendAckToo: ' +  adapter.config.sendAckToo + ', state.ack: ' + state.ack + ' (no action required) "' + id + '": ' + JSON.stringify(state));
+            adapter.log.debug('main.adapter.on.stateChange, sendAckOnly: ' +  adapter.config.sendAckOnly + ', state.ack: ' + state.ack + ' (no action required) "' + id + '": ' + JSON.stringify(state));
         }
     });
     return adapter;
@@ -220,6 +210,7 @@ function readStatesForPattern(item, cb) {
 
 function main() {
     // check parameter plausibility
+    adapter.config.CheckNamespaceDeepInObjecttreeTo = parseInt(adapter.config.CheckNamespaceDeepInObjecttreeTo, 10) || 2;
     if (adapter.config.CheckNamespaceDeepInObjecttreeTo < 2) adapter.config.CheckNamespaceDeepInObjecttreeTo = 2;
     if (adapter.config.ioBrokerMessageFormatCompressFromLength < 100) adapter.config.ioBrokerMessageFormatCompressFromLength = 100;
     
@@ -234,7 +225,7 @@ function main() {
     adapter.config.maxTopicLength = parseInt(adapter.config.maxTopicLength, 10) || 150;
     adapter.config.ioBrokerMessageFormatCompressFromLength = parseInt(adapter.config.ioBrokerMessageFormatCompressFromLength, 10) || 0;
 
-    adapter.config.sendAckToo = adapter.config.sendAckToo === 'true' || adapter.config.sendAckToo === true;
+    adapter.config.sendAckOnly = adapter.config.sendAckOnly === 'true' || adapter.config.sendAckOnly === true;
     adapter.config.saveOnChange = adapter.config.saveOnChange === 'true' || adapter.config.saveOnChange === true;
     adapter.config.ioBrokerMessageFormatActive = adapter.config.ioBrokerMessageFormatActive === 'true' || adapter.config.ioBrokerMessageFormatActive === true;
     adapter.config.ioBrokerMessageFormatIgnoreOwnMsg = adapter.config.ioBrokerMessageFormatIgnoreOwnMsg === 'true' || adapter.config.ioBrokerMessageFormatIgnoreOwnMsg === true;
@@ -244,16 +235,23 @@ function main() {
         adapter.log.info('adapter.config.keepalive: ' + adapter.config.keepalive);
         adapter.log.info('adapter.config.reconnectPeriod: ' + adapter.config.reconnectPeriod);
         adapter.log.info('adapter.config.connectTimeout: ' + adapter.config.connectTimeout);
-        adapter.log.info('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);
-        adapter.log.info('adapter.config.sendAckToo: ' + adapter.config.sendAckToo);
-        adapter.log.info('adapter.config.publish: ' + JSON.stringify(adapter.config.publish));
-        adapter.log.info('adapter.config.patterns: ' + JSON.stringify(adapter.config.patterns));
 
+        adapter.log.info('adapter.config.prefix: ' + JSON.stringify(adapter.config.prefix));
+
+        adapter.log.info('adapter.config.patterns: ' + JSON.stringify(adapter.config.patterns));
         adapter.log.info('adapter.config.maxTopicLength: ' + adapter.config.maxTopicLength);
+        adapter.log.info('adapter.config.defaultQoSsubscribe: ' + adapter.config.defaultQoSsubscribe);
+        adapter.log.info('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo + ' (default = 2)');
+        adapter.log.info('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);
+
+        adapter.log.info('adapter.config.publish: ' + JSON.stringify(adapter.config.publish));
+        adapter.log.info('adapter.config.defaultQoSpublish: ' + adapter.config.defaultQoSpublish);
+        adapter.log.info('adapter.config.retain: ' + adapter.config.retain);
+        adapter.log.info('adapter.config.sendAckOnly: ' + adapter.config.sendAckOnly);
+
         adapter.log.info('adapter.config.ioBrokerMessageFormatActive: ' + adapter.config.ioBrokerMessageFormatActive);
         adapter.log.info('adapter.config.ioBrokerMessageFormatIgnoreOwnMsg: ' + adapter.config.ioBrokerMessageFormatIgnoreOwnMsg);
         adapter.log.info('adapter.config.ioBrokerMessageFormatIgnoreOther: ' + adapter.config.ioBrokerMessageFormatIgnoreOther);
-        adapter.log.info('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo + ' (default = 2)');
         adapter.log.info('adapter.config.ioBrokerMessageFormatCompressFromLength: ' + adapter.config.ioBrokerMessageFormatCompressFromLength + ' (default = 100)');
     }
 
@@ -266,14 +264,19 @@ function main() {
 
     // Subscribe on own variables to publish it
     if (adapter.config.publish && adapter.config.publish != '' && adapter.config.publish.length > 0 &&  adapter.config.publish[0] != '' &&  adapter.config.publish[0].mask != '') {
-        adapter.log.debug('main.publish precheck started ...');
+        if (adapter.config.debug) adapter.log.info('main.publish precheck started ...');
 
         // [{"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false},{"mask":"logparser.0.*","QoS":"1","retain":false,"enabled":true}]
 
+        let bStartClient = true;
+
         adapter.config.publish.forEach((item) => {
+ 
             if ((item) && item.enabled && item.mask && item.mask != '') {
-                adapter.log.info('main.publish precheck, mask: "' + item.mask.trim() + '"; QoS: "' + item.QoS + '"; enabled: "' + item.enabled + '"');
+                if (adapter.config.debug) adapter.log.info('main.publish precheck, mask: "' + item.mask.trim() + '"; QoS: "' + item.QoS + '"; enabled: "' + item.enabled + '"');
                 // mask: "javascript.1.scriptEnabled.common.*"; QoS: ""; enabled: "true"
+
+                if (bStartClient) bStartClient = false;
 
                 try {
                     if (item.mask.indexOf('#') !== -1) {
@@ -287,6 +290,8 @@ function main() {
                         } else {
                             cnt++;
 
+                            adapter.log.debug('main.publish precheck, readStatesForPattern for item: ' + JSON.stringify(item));
+
                             readStatesForPattern(item);
                         }
                     });
@@ -295,11 +300,19 @@ function main() {
                     // {"mask":"javascript.1.scriptEnabled.common.*","QoS":"","retain":true,"enabled":true}
                 }
             }
+
+            if (bStartClient) {
+                if (adapter.config.debug) adapter.log.info('main, no (enabeld) mask for ioBroker subscriptions found!');
+
+                adapter.log.debug('main >> starting client ...');
+        
+                client = new require(__dirname + '/lib/client')(adapter, states);
+            }
         });
 
-        adapter.log.debug('main.publish precheck finished');
+        if (adapter.config.debug) adapter.log.info('main.publish precheck finished');
     } else {
-        adapter.log.info('main, no pattern for subscriptions configured!');
+        adapter.log.info('main, no masks for ioBroker subscriptions configured!');
 
         // If no subscription, start client
         adapter.log.debug('main >> starting client ...');
