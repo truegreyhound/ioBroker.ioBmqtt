@@ -1,6 +1,6 @@
 {
-  "_from": "iobroker.iobmqtt@2.2.1x",
-  "_id": "iobroker.iobmqtt@2.2.1x",
+  "_from": "iobroker.iobmqtt@2.2.3",
+  "_id": "iobroker.iobmqtt@2.2.3",
   "_inBundle": false,
   "_integrity": "",
   "_location": "/iobroker.iobmqtt",
@@ -28,20 +28,20 @@
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "iobroker.iobmqtt@2.1.9",
+    "raw": "iobroker.iobmqtt@2.2.3",
     "name": "iobroker.iobmqtt",
     "escapedName": "iobroker.iobmqtt",
-    "rawSpec": "2.1.9",
+    "rawSpec": "2.2.3",
     "saveSpec": null,
-    "fetchSpec": "2.1.9"
+    "fetchSpec": "2.2.3"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/iobroker.iobmqtt/-/iobroker.iobmqtt-2.2.1.tgz",
+  "_resolved": "https://registry.npmjs.org/iobroker.iobmqtt/-/iobroker.iobmqtt-2.2.3.tgz",
   "_shasum": "",
-  "_spec": "iobroker.iobmqtt@2.1.9",
+  "_spec": "iobroker.iobmqtt@2.2.3",
   "_where": "/opt/iobroker/node_modules/iobroker.js-controller",
   "author": {
     "name": "greyhound",
@@ -91,5 +91,5 @@
     "release": "release-script",
     "test": "node node_modules/mocha/bin/mocha --exit"
   },
-  "version": "2.2.1"
+  "version": "2.2.3"
 }

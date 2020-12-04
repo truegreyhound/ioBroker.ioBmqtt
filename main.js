@@ -9,6 +9,13 @@
  */
 'use strict';
 
+
+/*!P!
+max topic length entfernen
+
+*/
+
+
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const adapterName = require('./package.json').name.split('.').pop();
 const parseBool   = require('./lib/common').parseBool;
@@ -40,6 +47,8 @@ function startAdapter(options) {
 
 
     adapter.on('ready', () => {
+        adapter.log.info('onReady start -++*** iobmqtt ***++-');
+
         adapter.getForeignObject("system.config", (err, obj) => {
             if (obj && obj.native && obj.native.secret) {
                 //noinspection JSUnresolvedVariable
@@ -75,24 +84,24 @@ function startAdapter(options) {
             // if CLIENT
             if (client) client.onStateChange(id);
         } else
-        if ((!adapter.config.sendAckOnly || (adapter.config.sendAckOnly && state.ack))  && !messageboxRegex.test(id)) {
-            // adapter.config.sendAckOnly == TRUE && stae.ack == TRUE --> anerkannter state von einem Adapter
-            // adapter.config.sendAckOnly == FALSE --> ack ist egal, nur Änderung state wichtig
+        if ((!adapter.config.sendAckOnly || (adapter.config.sendAckOnly && state.ack)) && !messageboxRegex.test(id)) {
+            // adapter.config.sendAckOnly == TRUE && state.ack == TRUE --> anerkannter state von einem Adapter
+            // adapter.config.sendAckOnly == FALSE --> ack ist egal, nur Änderung state, ack, lc wichtig
 
             // get "old" values from cache
             const oldVal = states[id] ? states[id].state.val : null;
             const oldAck = states[id] ? states[id].state.ack : null;
-            const oldTS = states[id] ? states[id].state.ts : null;
+            const oldLC = states[id] ? states[id].state.lc : null;
 
+            // cache state
             states[id].state = state;
             adapter.log.debug('main.adapter.on.stateChange, oldVal "' + oldVal + '", oldAck: ' + oldAck + ', state.val "' + state.val + '", state.ack: ' + state.ack);
 
             // If value really changed
-            if ((oldVal && oldVal !== state.val) || (oldAck && oldAck !== state.ack) || (oldTS && oldTS != state.ts)) {
-                // immer senden || Wert geändert || ack geändert
-                // immer senden - da muss es ja vorher eine Änderung am State gegeben haben, 
+            if ((oldVal && oldVal !== state.val) || (oldAck && oldAck !== state.ack) || (oldLC && oldLC != state.lc)) {
+                // Wert geändert || ack geändert || lc geändert
 
-                // if CLIENT
+                // send to CLIENT
                 if (client) client.onStateChange(id, state);
             } else {
                 adapter.log.debug('main.adapter.on.stateChange, no change detcted (no action required) "' + id + '": ' + JSON.stringify(state));
@@ -169,6 +178,7 @@ function readStatesForPattern(item, cb) {
     adapter.log.debug('main.readStatesForPattern "' + item.mask + '" ...');
     let qos = (item.QoS && (parseInt(item.QoS) >= 0  && parseInt(item.QoS) <=2) ? parseInt(item.QoS) : parseInt(adapter.config.defaultQoSpublish));
     let retain = (item.retain ? parseBool(item.retain) : (item.retain && parseBool(item.retain) == false ? false : parseBool(adapter.config.retain)));
+    let bPublishCommonNative = (item.commonnative ? parseBool(item.commonnative) : (item.commonnative && parseBool(item.commonnative) == false ? false : parseBool(adapter.config.ioBrokerMessageFormatPublishCommonNative)));
 
 
     adapter.getForeignStates(item.mask, (err, res) => {
@@ -191,6 +201,7 @@ function readStatesForPattern(item, cb) {
                     states[id].state = res[id];
                     states[id].qos = qos;
                     states[id].retain = retain;
+                    states[id].publishCommonNative = bPublishCommonNative;
             });
         }
 
@@ -213,6 +224,8 @@ function main() {
     adapter.config.CheckNamespaceDeepInObjecttreeTo = parseInt(adapter.config.CheckNamespaceDeepInObjecttreeTo, 10) || 2;
     if (adapter.config.CheckNamespaceDeepInObjecttreeTo < 2) adapter.config.CheckNamespaceDeepInObjecttreeTo = 2;
     if (adapter.config.ioBrokerMessageFormatCompressFromLength < 100) adapter.config.ioBrokerMessageFormatCompressFromLength = 100;
+    adapter.config.debug = adapter.config.debug === 'true' || adapter.config.debug === true;
+    adapter.config.sendStateObject = adapter.config.sendStateObject === 'true' || adapter.config.sendStateObject === true;
     
     adapter.config.defaultQoSsubscribe = parseInt(adapter.config.defaultQoSsubscribe, 10) || 0;
     adapter.config.defaultQoSpublish = parseInt(adapter.config.defaultQoSpublish, 10) || 0;
@@ -223,7 +236,10 @@ function main() {
     adapter.config.reconnectPeriod = parseInt(adapter.config.reconnectPeriod, 10) || 1000;
     adapter.config.connectTimeout = parseInt(adapter.config.connectTimeout, 10) || 30;
     adapter.config.maxTopicLength = parseInt(adapter.config.maxTopicLength, 10) || 150;
+
     adapter.config.ioBrokerMessageFormatCompressFromLength = parseInt(adapter.config.ioBrokerMessageFormatCompressFromLength, 10) || 0;
+    adapter.config.ioBrokerMessageFormatUpdateCommonNative = adapter.config.ioBrokerMessageFormatUpdateCommonNative === 'true' || adapter.config.ioBrokerMessageFormatUpdateCommonNative === true;
+    adapter.config.ioBrokerMessageFormatPublishCommonNative = adapter.config.ioBrokerMessageFormatPublishCommonNative === 'true' || adapter.config.ioBrokerMessageFormatPublishCommonNative === true;
 
     adapter.config.sendAckOnly = adapter.config.sendAckOnly === 'true' || adapter.config.sendAckOnly === true;
     adapter.config.saveOnChange = adapter.config.saveOnChange === 'true' || adapter.config.saveOnChange === true;
@@ -236,18 +252,22 @@ function main() {
         adapter.log.info('adapter.config.reconnectPeriod: ' + adapter.config.reconnectPeriod);
         adapter.log.info('adapter.config.connectTimeout: ' + adapter.config.connectTimeout);
 
+        adapter.log.info('adapter.config.sendStateObject: ' + adapter.config.sendStateObject);
+        adapter.log.info('adapter.config.debug: ' + adapter.config.debug);
         adapter.log.info('adapter.config.prefix: ' + JSON.stringify(adapter.config.prefix));
-
+        
         adapter.log.info('adapter.config.patterns: ' + JSON.stringify(adapter.config.patterns));
         adapter.log.info('adapter.config.maxTopicLength: ' + adapter.config.maxTopicLength);
         adapter.log.info('adapter.config.defaultQoSsubscribe: ' + adapter.config.defaultQoSsubscribe);
         adapter.log.info('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo + ' (default = 2)');
         adapter.log.info('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);
+        adapter.log.info('adapter.config.ioBrokerMessageFormatUpdateCommonNative: ' + adapter.config.ioBrokerMessageFormatUpdateCommonNative);
 
         adapter.log.info('adapter.config.publish: ' + JSON.stringify(adapter.config.publish));
         adapter.log.info('adapter.config.defaultQoSpublish: ' + adapter.config.defaultQoSpublish);
         adapter.log.info('adapter.config.retain: ' + adapter.config.retain);
         adapter.log.info('adapter.config.sendAckOnly: ' + adapter.config.sendAckOnly);
+        adapter.log.info('adapter.config.ioBrokerMessageFormatPublishCommonNative: ' + adapter.config.ioBrokerMessageFormatPublishCommonNative);
 
         adapter.log.info('adapter.config.ioBrokerMessageFormatActive: ' + adapter.config.ioBrokerMessageFormatActive);
         adapter.log.info('adapter.config.ioBrokerMessageFormatIgnoreOwnMsg: ' + adapter.config.ioBrokerMessageFormatIgnoreOwnMsg);
@@ -302,7 +322,7 @@ function main() {
             }
 
             if (bStartClient) {
-                if (adapter.config.debug) adapter.log.info('main, no (enabeld) mask for ioBroker subscriptions found!');
+                if (adapter.config.debug) adapter.log.info('main, no (enabled) mask for ioBroker subscriptions found!');
 
                 adapter.log.debug('main >> starting client ...');
         

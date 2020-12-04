@@ -433,6 +433,10 @@
                             <input id="CheckNamespaceDeepInObjecttreeTo" type="number" min="2" max="5" class="value" />
                             <span class="translate" for="CheckNamespaceDeepInObjecttreeTo">how deep check namspace before save under mqtt adapter (2 - 5, e.g. 0 = javascript)</span>
                         </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="ioBrokerMessageFormatUpdateCommonNative" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="ioBrokerMessageFormatUpdateCommonNative">update common and native if given</span>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="input-field col s12 m6 l3">
@@ -465,6 +469,10 @@
                             <input id="retain" type="checkbox" class="value filled-in" />
                             <span class="translate" for="retain">Set retain flag (default)</span>
                         </div>
+                        <div class="input-field col s12 m6 l3">
+                            <input id="ioBrokerMessageFormatPublishCommonNative" type="checkbox" class="value filled-in" />
+                            <span class="translate" for="ioBrokerMessageFormatPublishCommonNative">send common and native (default)</span>
+                        </div>
                     </div>
 					<div id="publish">
 						<div class="row">
@@ -480,6 +488,7 @@
 										<tr>
 											<th data-name="_index" style="width: 5%" class="center-align translate"></th>
 											<th data-name="mask" style="width: 60%" class="translate" for="mask">mask</th>
+											<th data-name="commonnative"  style="width: 10%" data-type="checkbox" class="translate">common native</th>
 <!--											<th data-name="QoS"  style="width: 10%" data-type="combobox" class="translate">QoS</th> -->
 											<th data-name="QoS"  style="width: 10%" class="translate">QoS</th>
 											<th data-name="retain"  style="width: 10%" data-type="checkbox" class="translate">Retain</th>

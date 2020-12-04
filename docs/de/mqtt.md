@@ -13,7 +13,7 @@ Dieser Adapter erweitert und normiert das Format der für einen Topic übertrage
 *   Primäre Aufgabe dieses Adapters ist die lose Kopplung von ioBroker-Installationen mit gegenseitiger Aktualisierung.
 
 **ioBroker Message Format**
-<topic> {'clientID': <clientID>, 'ts': <timestamp>, 'version': <version>, 'receiver': <receiver>[, 'type': <type>, 'coding': <coding>[, 'coding-src': <coding-src>],'messsage': <Message>}
+<topic> {'clientID': <clientID>, 'ts': <timestamp>, 'version': <version>, 'receiver': <receiver>[, 'type': <type>][, 'attr': <attr>], 'coding': <coding>[, 'coding-src': <coding-src>],'messsage': <Message>}
 
 topic: <normaler topic>|'ioBroker/mqtt-command'
 		== ioBroker/mqtt-command, dann steht in <message> eine Steueranweisung: {'command': <command>}
@@ -25,6 +25,7 @@ version: <m.n> - m == major, n == minor
 		bei größerem Minor zu warnings (max 3 je Tag)
 receiver: * - everyone, [<clientID>]  (derzeit nicht konfigurierbar)
 type: value from common.type from ioBroker state object
+attr: {common: {...}, native: {...}} - properties from ioBroker state objects
 coding: |base64|zip
 		Im Objekt des Datenpunktes kann in native.mqtt_coding (= base64) eine Vorgabe gemacht werden, das ist insbesondere für JSON-Objekte gedacht
 coding-src: |object|size, '' - keine Quelle | object - native.mqtt_coding, size - message.lenght > definition
@@ -73,15 +74,17 @@ Da der Adapter nur als Client arbeitet, ist ein eigenständiger Broker erforderl
 * **komprimiere ab Nachrichtenlänge** - Wenn das ioBroker-Objekt größer als angegeben, dann wird es komprimiert, 0 = deaktiviert
 
 ### MQTT subscribe Einstellungen
-*   **maximale topic Länge** - maximale Zeichenanzahl eines topics
+*   **maximale topic Länge** - maximale Zeichenanzahl eines topics (wird mit nächster Version entfernt)
 *   **Default QoS** - Quality of Service für die konfigurierten pattern, kann je pattern geändert werden.
 *   **Tabelle mit pattern für das Abonnieren von eigenen States** - Diese pattern dienen zum Abonnieren von anderen Clients gesendeten topcis. Es gelten die Regeln für MQTT topics! Erlaubt Platzhalter sind + und #.
-*   **Suchetiefe für Namspace eines States** - Bis zu dieser Tiefe muss ein Namespace existieren, um den empfangenen State in diesen Namespace zu schreiben. Ein Wert von 2 (minimum und Standard) bedeutet bei einem Empfangenen topic von z. B. _**javascript/0/presence/gustes**_, dass ein Objekt mit der ID _**javascript.0.presence**_ existieren muss (Suche beginnt mit Index = 0). Andernfalls wird die Nachricht in den Namespace des Adapters, also als _**iobmqtt.0.javascript.0.presence.gustes**_ geschrieben. Durch die gezielte Anlage von Objekten vom Typ _**channel**_ kann das Ziel also gesteuert werden.
+*   **Suchtiefe für Namspace eines States** - Bis zu dieser Tiefe muss ein Namespace existieren, um den empfangenen State in diesen Namespace zu schreiben. Ein Wert von 2 (minimum und Standard) bedeutet bei einem Empfangenen topic von z. B. _**javascript/0/presence/gustes**_, dass ein Objekt mit der ID _**javascript.0.presence**_ existieren muss (Suche beginnt mit Index = 0). Andernfalls wird die Nachricht in den Namespace des Adapters, also als _**iobmqtt.0.javascript.0.presence.gustes**_ geschrieben. Durch die gezielte Anlage von Objekten vom Typ _**channel**_ kann das Ziel also gesteuert werden.
+*   **update common and native if given** - Wenn eine erhaltene Nachricht im Attribut "attr" common and native enthält, wird der entsprechende state aktualisiert
 *   **Schreibe nur bei Änderung** - Wenn aktiv, wird das empfangene State-Objekt nur geschrieben, wenn der Wert, ack oder tc (letzte Änderung) von den vorhandenen Werten abweichen.
 
 ### MQTT publish Einstellungen
-*   **Bekanntgabe eigene States beim Verbinden** - die konfiurierten und freigegebenen States werden beim Start des Adapters gesendet, unabhängig davon werden die maskierten States auch bei jeder Änderung (Wert, ack, tc) gesendet
+*   **Bekanntgabe eigene States beim Verbinden** - die konfiurierten und freigegebenen States werden beim Start des Adapters gesendet, unabhängig davon werden die maskierten States auch bei jeder Änderung (val, ack, tc) gesendet
 *   **Default QoS** - Quality of Service für die konfigurierten Masken, kann je Maske geändert werden.
 *   **retain flag** - Vorgabe für alle konfigurierten Masken, wenn gesetzt, werden alle States der konfigurierten Masken mit dem retain-flag gesendet, kann je Maske geändert werden
+*   **send common and native** - Vorgabe für alle konfigurierten Masken, wenn aktiviert, werden von allen states zusätzlich die Properties "common" und "native" gesendet, kann für jede Maske geändert werden
 *   **Tabelle mit Masken für Bekanntgeben von eigenen States** - Diese Masken dienen zum Subscriben von States, die an den Broker gesendet werden sollen. Es gelten die Regeln für States beim Subscribe, also nur "*" ist erlaubt. Ein "+" in der ID eines State wird transparent in "~" umgewandelt.
 *   **Sende nur States mit ack=true** - Normally all states independent from the ack state will be sent to the broker. If this flag is set, only states with ackÜtrue will be sent. 

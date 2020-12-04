@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "iobmqtt",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "news": {
       "0.2.2": {
         "en": "first working version",
@@ -83,7 +83,7 @@
     "certChained": "",
     "prefix": "",
     "sendAckOnly": false,
-    "sendStateObject": false,
+    "sendStateObject": true,
     "webSocket": false,
     "maxTopicLength": 150,
     "extraSet": false,
@@ -99,6 +99,8 @@
     "ioBrokerMessageFormatIgnoreOwnMsg": true,
     "ioBrokerMessageFormatCompressFromLength": 0,
     "ioBrokerMessageFormatIgnoreOther": true,
+    "ioBrokerMessageFormatPublishCommonNative": false,
+    "ioBrokerMessageFormatUpdateCommonNative": true,
     "CheckNamespaceDeepInObjecttreeTo": 3
   },
   "objects": [],

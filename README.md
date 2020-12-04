@@ -42,26 +42,27 @@ This adapter works only as client for an broker.
 
 - **Trace output for every message** - Debug outputs.
 - **ignore own messages** - States that have been sent (published as message) and subscribed as a topic at the same time are not processed
-- **ignore non ioBroker messages** - only messages in "ioBroker MQTT message format" format are processed
-- **compress from lenghth** - if the length of the original message is longer, it is compressed
+- **compress from lenght** - if the length of the original message is longer, it is compressed
 
 ### MQTT subscribe settings
 - **Max topic length** - topics that are longer than this value are not processed
 - **QoS (Quality of Service)** - possible values 0, 1 or 2, see the documentation to MQTT, not tested yet
 - **Subscribe Patterns** - List of patterns to be subscribed. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. 'iobmqtt/0/#,javascript/#' to subscribe for states of iobmqtt.0 and javascript. A QoS that differs from the default can be set for each pattern. Only enabled patterns are subscribed.
 - **how deep check namspace before save under iobmqtt adapter** - For a received topic, it is checked whether there is already a data point for the derived ID up to this depth of the namespace. If so, the state is written under this namespace, if not under the namespace of this adapter instance, e.g if the receivd topic "javascript/0/watering/garden/circuit/1/valve_state" und the value of this property is "3" (zero based index) then the the adapter checks whether an object with the ID "javascript/0/watering/garden" exists. If so, the state is written there, otherwise under iobmqtt.<instance>. as e.g iobmqtt.0.javascript.0.watering.garden.circuit.1.valve_state
-- **Store only on change** - Write the incoming messages data only if the payload is differ from actual stored. If the payload is an ioBroker State object, then ack and ts are also taken into account.
+- **update common and native if given** - If contains a received message a "attr" property, common and native will be write to the state
+- **Store only on change** - Write the incoming messages data only if the payload is differ from actual stored. If the payload is an ioBroker State object, then ack and lc are also taken into account.
 
 ### MQTT publish settings
 - **Publish all states at start** - Publish all states (defined by state mask) every time by connection establishment to announce own available states and their values. If this option and "use ioBroker MQTT message format" is activated, the topic 'ioBroker/mqtt-command' with the payload 'publishStop' is sent before the states are sent. After the publication of all states, the topic 'ioBroker/mqtt-command' with the payload 'publishStart'.
 - **QoS (Quality of Service)** - possible values 0, 1 or 2, see the documentation to MQTT, not tested yet
 - **retain flag** - The broker stores the last retained message and the corresponding QoS for that topic. Each client that subscribes to a topic pattern that matches the topic of the retained message receives the retained message immediately after they subscribe. The broker stores only one retained message per topic. Retained messages help newly-subscribed clients get a status update immediately after they subscribe to a topic. The retained message eliminates the wait for the publishing clients to send the next update.
-- **Mask to publish own states** - List of mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of "yr" and "hm-rpc" adapter. Regardless of this, a state or a value are only sent if the value, ack or ts have changed. A QoS and the retain flag that differs from the default can be set for each mask. Only enabled masks are published.
+- **send common and native** - default for all configured masks, if enabled, for all enabled states the adapter send in the atrribute "attr" the properties common and native of an state
+- **Mask to publish own states** - List of mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of "yr" and "hm-rpc" adapter. Regardless of this, a state or a value are only sent if the value, ack or lc have changed. A QoS and the retain flag that differs from the default can be set for each mask. Only enabled masks are published.
 - **Send states with ack=true only** - Normally all states independent from the ack state will be sent to the broker. If this flag is set, only states with ack=true will be sent. 
 
 ## ioBroker MQTT message format
 
-<topic> {'clientID': <clientID>, 'ts': <timestamp>, 'version': <version>, 'receiver': <receiver>[, 'type': <type>, 'coding': <coding>[, 'coding-src': <coding-src>],'messsage': <Message>}
+<topic> {'clientID': <clientID>, 'ts': <timestamp>, 'version': <version>, 'receiver': <receiver>[, 'type': <type>][, 'attr': <attr>], 'coding': <coding>[, 'coding-src': <coding-src>],'messsage': <Message>}
 
 topic: <normaler topic>|'ioBroker/mqtt-command'
 		== ioBroker/mqtt-command, dann steht in <message> eine Steueranweisung: {'command': <command>}
@@ -73,6 +74,7 @@ version: <m.n> - m == major, n == minor
 		bei größerem Minor zu warnings (max 3 je Tag)
 receiver: * - everyone, [<clientID>]  (derzeit nicht konfigurierbar)
 type: value from common.type from ioBroker state object
+attr: {common: {...}, native: {...}} - properties from ioBroker state objects
 coding: |base64|zip
 		Im Objekt des Datenpunktes kann in native.mqtt_coding (= base64) eine Vorgabe gemacht werden, das ist insbesondere für JSON-Objekte gedacht
 coding-src: |object|size, '' - keine Quelle | object - native.mqtt_coding, size - message.lenght > definition
@@ -125,6 +127,9 @@ The broker was tested with following broker:
 
 
 ## Changelog
+
+### 0.2.3 (2020-11-30)
+* (greyhound) add possibility to publish and save common and native properties for a mask
 
 ### 0.2.2 (2020-11-27)
 * (greyhound) first working version with the  ioBroker MQTT message format
