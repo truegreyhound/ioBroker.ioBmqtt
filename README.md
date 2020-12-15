@@ -128,6 +128,10 @@ The broker was tested with following broker:
 
 ## Changelog
 
+### 0.2.4 (2020-12-12)
+* (greyhound) correct description
+* (greyhound) maxTopicLength removed
+
 ### 0.2.3 (2020-11-30)
 * (greyhound) add possibility to publish and save common and native properties for a mask
 

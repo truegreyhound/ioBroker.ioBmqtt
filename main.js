@@ -7,11 +7,12 @@
  *      MIT License
  *
  */
+/* jshint -W097 */
 'use strict';
 
+/* jshint node: true */
 
 /*!P!
-max topic length entfernen
 
 */
 
@@ -235,7 +236,6 @@ function main() {
     adapter.config.keepalive = parseInt(adapter.config.keepalive, 10) || 10;
     adapter.config.reconnectPeriod = parseInt(adapter.config.reconnectPeriod, 10) || 1000;
     adapter.config.connectTimeout = parseInt(adapter.config.connectTimeout, 10) || 30;
-    adapter.config.maxTopicLength = parseInt(adapter.config.maxTopicLength, 10) || 150;
 
     adapter.config.ioBrokerMessageFormatCompressFromLength = parseInt(adapter.config.ioBrokerMessageFormatCompressFromLength, 10) || 0;
     adapter.config.ioBrokerMessageFormatUpdateCommonNative = adapter.config.ioBrokerMessageFormatUpdateCommonNative === 'true' || adapter.config.ioBrokerMessageFormatUpdateCommonNative === true;
@@ -257,7 +257,6 @@ function main() {
         adapter.log.info('adapter.config.prefix: ' + JSON.stringify(adapter.config.prefix));
         
         adapter.log.info('adapter.config.patterns: ' + JSON.stringify(adapter.config.patterns));
-        adapter.log.info('adapter.config.maxTopicLength: ' + adapter.config.maxTopicLength);
         adapter.log.info('adapter.config.defaultQoSsubscribe: ' + adapter.config.defaultQoSsubscribe);
         adapter.log.info('adapter.config.CheckNamespaceDeepInObjecttreeTo: ' + adapter.config.CheckNamespaceDeepInObjecttreeTo + ' (default = 2)');
         adapter.log.info('adapter.config.saveOnChange: ' + adapter.config.saveOnChange);

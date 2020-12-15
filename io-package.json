@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "iobmqtt",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "news": {
       "0.2.2": {
         "en": "first working version",
@@ -21,15 +21,8 @@
       "pl": "Kklient MQTT"
     },
     "desc": {
-      "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
-      "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
-      "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера",
-      "pt": "Este adaptador permite enviar e receber mensagens MQTT da ioBroker e ser um corretor",
-      "nl": "Met deze adapter kunt u MQTT-berichten van ioBroker verzenden en ontvangen en makelaar worden",
-      "fr": "Cet adaptateur permet d'envoyer et de recevoir des messages MQTT de ioBroker et d'être un courtier",
-      "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
-      "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
-      "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera"
+      "en": "This adapter allows to send and receive MQTT messages in ioBroker message format",
+      "de": "Adapter ermöglicht eine Kommunikation mit einem MQTT broker im ioBroker message format"
     },
     "authors": [
       "greyhound <truegreyhound@gmx.net>"
@@ -85,7 +78,6 @@
     "sendAckOnly": false,
     "sendStateObject": true,
     "webSocket": false,
-    "maxTopicLength": 150,
     "extraSet": false,
     "keepalive": 11,
     "reconnectPeriod": 10,
