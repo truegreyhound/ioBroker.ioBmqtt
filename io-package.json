@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "iobmqtt",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "news": {
       "0.2.2": {
         "en": "first working version",

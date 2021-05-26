@@ -128,6 +128,9 @@ The broker was tested with following broker:
 
 ## Changelog
 
+### 0.2.6 (2021-05-26)
+* (greyhound) prevent converting message in ioBroker message format
+
 ### 0.2.5 (2020-12-12)
 * (greyhound) fix occasion to zip a message
 
