@@ -28,7 +28,7 @@ type: value from common.type from ioBroker state object
 attr: {common: {...}, native: {...}} - properties from ioBroker state objects
 coding: |base64|zip
 		Im Objekt des Datenpunktes kann in native.mqtt_coding (= base64) eine Vorgabe gemacht werden, das ist insbesondere für JSON-Objekte gedacht
-coding-src: |object|size, '' - keine Quelle | object - native.mqtt_coding, size - message.lenght > definition
+coding-src: |object|size, '' - keine Quelle | object - native.mqtt_coding | size - message.lenght > definition, native.mqtt_coding = base64|zip
 message		- die Originalmessage
 
 
