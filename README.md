@@ -52,12 +52,12 @@ This adapter works only as client for an broker.
 - **update common and native if given** - If contains a received message a "attr" property, common and native will be write to the state
 - **Store only on change** - Write the incoming messages data only if the payload is differ from actual stored. If the payload is an ioBroker State object, then ack and lc are also taken into account.
 
-### MQTT publish settings
+### ioBroker publish settings
 - **Publish all states at start** - Publish all states (defined by state mask) every time by connection establishment to announce own available states and their values. If this option and "use ioBroker MQTT message format" is activated, the topic 'ioBroker/mqtt-command' with the payload 'publishStop' is sent before the states are sent. After the publication of all states, the topic 'ioBroker/mqtt-command' with the payload 'publishStart'.
 - **QoS (Quality of Service)** - possible values 0, 1 or 2, see the documentation to MQTT, not tested yet
 - **retain flag** - The broker stores the last retained message and the corresponding QoS for that topic. Each client that subscribes to a topic pattern that matches the topic of the retained message receives the retained message immediately after they subscribe. The broker stores only one retained message per topic. Retained messages help newly-subscribed clients get a status update immediately after they subscribe to a topic. The retained message eliminates the wait for the publishing clients to send the next update.
 - **send common and native** - default for all configured masks, if enabled, for all enabled states the adapter send in the atrribute "attr" the properties common and native of an state
-- **Mask to publish own states** - List of mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of "yr" and "hm-rpc" adapter. Regardless of this, a state or a value are only sent if the value, ack or lc have changed. A QoS and the retain flag that differs from the default can be set for each mask. Only enabled masks are published.
+- **Mask to publish own states** - List of mask's or id's for states, that must be published to broker. '*' - to publish all states. io.hm-rpc.0.*' to publish states of "hm-rpc" adapter. Regardless of this, a state or a value are only sent if the value, ack or lc have changed. A QoS and the retain flag that differs from the default can be set for each mask. Only enabled masks are published.
 - **Send states with ack=true only** - Normally all states independent from the ack state will be sent to the broker. If this flag is set, only states with ack=true will be sent. 
 
 ## ioBroker MQTT message format
@@ -127,6 +127,12 @@ The broker was tested with following broker:
 
 
 ## Changelog
+
+### 0.2.7 (2021-05-26)
+* (greyhound) fix handling id without pattern (*), convert id in array
+* (greyhound) optimize mqtt client start in main
+* (greyhound) add state message and cfg properties to states array, if state new created
+* (greyhound) optimize publish state
 
 ### 0.2.6 (2021-05-26)
 * (greyhound) prevent converting message in ioBroker message format

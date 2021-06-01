@@ -12,8 +12,16 @@ a) der Nampespace existiert bereits, z. B. javascript.0.presence, dann wird Obje
 b) Nampespace existiert nicht, dann wird das Opjekt unterhalb von mqtt.n erstellt  
 Sollte dass Anlegen der State-Objekte und das Schreiben der State-Werte zu zeitaufwändig sein, könnte dies über eine asynchron im Hintergrund laufende Queue gelöst werden, über die dann die Anlage organisiert wird.
 
+# Adapter start
 
-# Programmlücken, Ergäzungen
+Als erstes werden entsprechend der Maske für ioBroker states diese an den MQTT-Broker gesendet
+Sind keine Masken / IDs definiert, wird der Client direkt gestartet und das Empfangen der per pattern konfigurierten MQTT Topics beginnt.
+
+Ist die ID des empfangenen Topics nicht im states-Cache enthalten, wird die zugehörige Maske mit ermittelt und die dazugehörige Konfiguration ermittelt und gespeichert.
+
+Subscriptions funktionieren auch mit nachträglich angelegten States
+
+# Programmlücken, Ergänzungen
 * clean Adaperstart prüfen/testen, d.h., besteht die Möglichkeit alle selbst publishten topics auf dem Broker zu löschen , z. B. via ClientID oder direkt per Topic-pattern? <-- wäre publishing-Parameter
 
 * auf der allgemeinen MQTT-Konfig-Seite eine Liste mit potentiellen Empfängern pflegen, dann bei Publish in Liste Combobox mit Multiselect für Empfänger, Standard "*"
@@ -23,7 +31,8 @@ Sollte dass Anlegen der State-Objekte und das Schreiben der State-Werte zu zeita
 * ggf. ist es sinnvoll, an states[id] einen errorcounter (ggf. je error type) anzuhängen und nach z. B. 3 maligem Auftreten diesen state zu übergehen, wenn vorher erfolg auf 0 wieder setzen
 
 ## index_m.html
-- Wie Werte in neuer Zeile vorbelegen nach klick auf +
+- Wie Werte in neuer Zeile vorbelegen nach klick auf +   --> nach Anpassung in main und client Vorbelegung von qos, retain und commonnative anpassen! Ist im Moment etwas "schräg"
+- Select Datapoint / ID in Zeile
 - Combobox in Tabelle
 - Validierung Tabellenzeile wenn Focus lost
 

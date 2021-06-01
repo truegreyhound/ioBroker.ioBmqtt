@@ -24,7 +24,22 @@ const parseBool   = require('./lib/common').parseBool;
 let adapter;
 
 let client = null;
-let states = {};
+let states = {};        // cache for states
+/*
+    states[<id>]
+        .common
+        .native
+        .state
+        .state.val
+        .state.ack
+        .state.lc
+        .qos        - 0|1|2
+        .retain     - true|false
+        .publishCommonNative
+        .topic      - mqtt topic
+        .type       - command or send without common and native: ''|<non>|???
+*/
+
 
 const messageboxRegex = new RegExp('\.messagebox$');
 
@@ -84,8 +99,7 @@ function startAdapter(options) {
 
             // if CLIENT
             if (client) client.onStateChange(id);
-        } else
-        if ((!adapter.config.sendAckOnly || (adapter.config.sendAckOnly && state.ack)) && !messageboxRegex.test(id)) {
+        } else if ((!adapter.config.sendAckOnly || (adapter.config.sendAckOnly && state.ack)) && !messageboxRegex.test(id)) {
             // adapter.config.sendAckOnly == TRUE && state.ack == TRUE --> anerkannter state von einem Adapter
             // adapter.config.sendAckOnly == FALSE --> ack ist egal, nur Änderung state, ack, lc wichtig
 
@@ -177,11 +191,13 @@ function readStatesForPattern(item, cb) {
     // {"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false}
     
     adapter.log.debug('main.readStatesForPattern "' + item.mask + '" ...');
+
     let qos = (item.QoS && (parseInt(item.QoS) >= 0  && parseInt(item.QoS) <=2) ? parseInt(item.QoS) : parseInt(adapter.config.defaultQoSpublish));
     let retain = (item.retain ? parseBool(item.retain) : (item.retain && parseBool(item.retain) == false ? false : parseBool(adapter.config.retain)));
     let bPublishCommonNative = (item.commonnative ? parseBool(item.commonnative) : (item.commonnative && parseBool(item.commonnative) == false ? false : parseBool(adapter.config.ioBrokerMessageFormatPublishCommonNative)));
+    adapter.log.debug('main.readStatesForPattern, qos: ' + qos + '; retain: '  + retain + '; bPublishCommonNative: ' + bPublishCommonNative);
 
-
+    //!I! wenn state noch nicht existiert, wird er beim ersten Empfang hinzugefügt
     adapter.getForeignStates(item.mask, (err, res) => {
         adapter.log.debug('main.readStatesForPattern "' + item.mask + '", res: ' + JSON.stringify(res));
 
@@ -196,6 +212,7 @@ function readStatesForPattern(item, cb) {
         if (!err && res) {
             states = states || {};
 
+            // fill states array
             Object.keys(res).filter(id => !messageboxRegex.test(id))
                 .forEach((id) => {
                     states[id] = {};
@@ -215,7 +232,7 @@ function readStatesForPattern(item, cb) {
             client = new require('./lib/client')(adapter, states);
         }
 
-        if (cb) cb('process mask finished');
+        if (cb) cb('main.readStatesForPattern finished');
     });
 } // readStatesForPattern()
 
@@ -281,16 +298,15 @@ function main() {
     }
 
 
+    let bStartClient = true;
+
     // Subscribe on own variables to publish it
-    if (adapter.config.publish && adapter.config.publish != '' && adapter.config.publish.length > 0 &&  adapter.config.publish[0] != '' &&  adapter.config.publish[0].mask != '') {
+    if (adapter.config.publish && adapter.config.publish != '' && adapter.config.publish.length > 0 && adapter.config.publish[0] != '' && adapter.config.publish[0].mask != '') {
         if (adapter.config.debug) adapter.log.info('main.publish precheck started ...');
 
         // [{"mask":"javascript.0.system.event_logs.*","QoS":"","retain":false,"enabled":false},{"mask":"logparser.0.*","QoS":"1","retain":false,"enabled":true}]
 
-        let bStartClient = true;
-
         adapter.config.publish.forEach((item) => {
- 
             if ((item) && item.enabled && item.mask && item.mask != '') {
                 if (adapter.config.debug) adapter.log.info('main.publish precheck, mask: "' + item.mask.trim() + '"; QoS: "' + item.QoS + '"; enabled: "' + item.enabled + '"');
                 // mask: "javascript.1.scriptEnabled.common.*"; QoS: ""; enabled: "true"
@@ -298,14 +314,29 @@ function main() {
                 if (bStartClient) bStartClient = false;
 
                 try {
-                    if (item.mask.indexOf('#') !== -1) {
-                        adapter.log.warn('main.publish precheck, sed MQTT notation for ioBroker id mask "' + item.mask + '": use "' + item.mask.replace(/#/g, '*') + ' notation');
+                    if (item.mask.indexOf('#') > -1) {
+                        // correct false configuration
+                        adapter.log.warn('main.publish precheck, set MQTT notation for ioBroker id mask "' + item.mask + '": use "' + item.mask.replace(/#/g, '*') + ' notation');
                         item.mask = item.mask.replace(/#/g, '*');
                     }
 
-                    adapter.subscribeForeignStates(item.mask.trim(), (error) => {
+                    let sMask = item.mask.trim();
+                    if (sMask.indexOf('*') < 0) {
+                        // no pattern --> make array
+                        sMask = [sMask];
+                        adapter.log.debug('main.publish precheck, mask string converted in array: ' + JSON.stringify(sMask));
+                    }
+
+                    //!P! subscribeForeignStates mit sMask ohne pattern beendet sich ohne action and error, echte ID in array funktioniert js-controller v2.2.9
+                    //!P! let bSubscribeForeignStatesExecuted = false;
+
+                    adapter.subscribeForeignStates(sMask, (error) => {  // Ausführung asynchron, hoffentlich wird cnt schneller inkrementiert als readStatesForPattern diesen runterzählt
+                        //!P! bSubscribeForeignStatesExecuted = true;     // wenn sMask == string und kein "*", dann wird subscribeForeignStates nicht ausgeführt
+
                         if (error) {
-                            adapter.log.error('main.publish precheck, error on subscribeForeignStates "' + item.mask.trim() + '" (' + JSON.stringify(error) + ')');
+                            adapter.log.error('main.publish precheck, error on subscribeForeignStates "' + sMask + '" (' + JSON.stringify(error) + ')');
+
+                            return;
                         } else {
                             cnt++;
 
@@ -314,22 +345,31 @@ function main() {
                             readStatesForPattern(item);
                         }
                     });
+                    /*!P! adapter.log.debug('main.publish precheck, bSubscribeForeignStatesExecuted: ' + bSubscribeForeignStatesExecuted);
+
+                    if (bSubscribeForeignStatesExecuted === false) {
+                        adapter.log.error('main.publish precheck, error in mask, subscribeForeignStates ignored mask "' + sMask + '"');
+
+                        return;
+                    } */
                 } catch (err) {
                     adapter.log.error('main.publish precheck, error on publish ' + JSON.stringify(item) + '; err: ' + JSON.stringify(err));
                     // {"mask":"javascript.1.scriptEnabled.common.*","QoS":"","retain":true,"enabled":true}
+
+                    return;
                 }
-            }
-
-            if (bStartClient) {
-                if (adapter.config.debug) adapter.log.info('main, no (enabled) mask for ioBroker subscriptions found!');
-
-                adapter.log.debug('main >> starting client ...');
-        
-                client = new require(__dirname + '/lib/client')(adapter, states);
             }
         });
 
         if (adapter.config.debug) adapter.log.info('main.publish precheck finished');
+
+        if (bStartClient) {
+            if (adapter.config.debug) adapter.log.info('main, no (enabled) mask for ioBroker subscriptions found!');
+
+            adapter.log.debug('main >> starting client ...');
+    
+            client = new require(__dirname + '/lib/client')(adapter, states);
+        }
     } else {
         adapter.log.info('main, no masks for ioBroker subscriptions configured!');
 
